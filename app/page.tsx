@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; 
 import Link from 'next/link';
-import { Search, Monitor, Armchair, Fan, Calculator, Swords, TrendingUp, Cpu, Tv, Mouse, Keyboard, Tablet, Wind, Headphones, Watch, Camera } from 'lucide-react';
+import { Search, Monitor, Armchair, Fan, Calculator, Swords, TrendingUp, Cpu, Tv, Mouse, Keyboard, Tablet, Wind, Headphones, Watch, Camera, Plug } from 'lucide-react'; // ⭐ Plug 추가
 import Footer from '@/components/layout/Footer';
 
 export default function Home() {
@@ -114,6 +114,7 @@ export default function Home() {
             { name: "안마기", icon: Armchair, slug: "massage" },
             { name: "워치", icon: Watch, slug: "watch" },
             { name: "카메라", icon: Camera, slug: "camera" },
+            { name: "IT소품/잡화", icon: Plug, slug: "accessory" }, // ⭐ 추가됨
           ].map((cat) => (
             <Link key={cat.slug} href={`/category/${cat.slug}`} className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-white border border-gray-100 hover:border-blue-500 hover:shadow-md transition-all group">
               <cat.icon className="w-8 h-8 text-gray-400 group-hover:text-blue-600 transition-colors" />

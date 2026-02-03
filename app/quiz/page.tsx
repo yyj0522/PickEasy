@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'; 
 import { useSearchParams, useRouter } from 'next/navigation'; 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Monitor, Fan, Armchair, ChevronRight, Loader2, Cpu, Tv, Mouse, Keyboard, Tablet, Wind, Headphones, Watch, Camera } from 'lucide-react';
+import { Monitor, Fan, Armchair, ChevronRight, Loader2, Cpu, Tv, Mouse, Keyboard, Tablet, Wind, Headphones, Watch, Camera, Plug } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import BuyButton from '@/components/common/BuyButton';
 import Footer from '@/components/layout/Footer';
@@ -21,6 +21,7 @@ const CATEGORIES = [
   { id: 'massage', name: '안마기', icon: Armchair },
   { id: 'watch', name: '워치', icon: Watch },
   { id: 'camera', name: '카메라', icon: Camera },
+  { id: 'accessory', name: 'IT소품/잡화', icon: Plug },
 ];
 
 const QUIZ_DATA: Record<string, any> = {
@@ -131,6 +132,14 @@ const QUIZ_DATA: Record<string, any> = {
       { id: 'resolution', text: '영상 촬영 스펙은?', options: ['FHD면 충분', '4K 필수', '4K 60프레임 이상/10bit'] },
       { id: 'brand', text: '선호하는 색감/브랜드?', options: ['소니 (AF/선명함)', '캐논 (인물 색감)', '후지필름 (필름 감성)', '니콘/파나소닉'] },
       { id: 'budget', text: '렌즈 포함 예산은?', options: ['100만원 이하', '150~250만원', '300만원 이상'] }
+    ]
+  },
+  accessory: {
+    questions: [
+      { id: 'type', text: '찾으시는 제품 종류는?', options: ['충전기/케이블 (고속충전)', '데스크테리어 (마우스패드/정리함)', 'PC부품 (키캡/스위치/쿨러)', '저장장치 (USB/SSD 케이스)'] },
+      { id: 'budget', text: '가격대는 어느 정도?', options: ['알리 천원마트급 (5천원 이하)', '가성비 (1~3만원)', '고급형 (Baseus/Ugreen 등)'] },
+      { id: 'priority', text: '가장 중요한 점은?', options: ['무조건 싼 가격', '빠른 배송 (꽁돈대첩)', '디자인/감성', '내구성/성능'] },
+      { id: 'quantity', text: '구매 수량은?', options: ['1개만 필요', '여러 개 쟁여두기 (묶음배송)', '대량 구매'] }
     ]
   }
 };
