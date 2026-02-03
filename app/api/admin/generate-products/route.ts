@@ -17,19 +17,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '비밀번호 오류' }, { status: 401 });
     }
 
-    // 1. 🔍 검색 쿼리 강력하게 수정 (원천 차단)
+    // 1. 🔍 검색 쿼리: 오염원(노트북, 청소기)을 브랜드명 단위로 차단
     let q = `2026년 ${categoryName} 인기순위 추천 가격 가성비`;
     
     if (category === 'desktop') {
-      // 데스크탑 검색 시 노트북 제외
-      q = `2026년 조립컴퓨터 본체 데스크탑 추천 순위 -노트북 -랩톱 -그램 -갤럭시북`;
+      // 데스크탑: 노트북 대표 브랜드명 직접 제외
+      q = `2026년 조립컴퓨터 본체 데스크탑 추천 순위 -노트북 -랩톱 -그램 -갤럭시북 -맥북 -MacBook -이온 -Air`;
     }
     else if (category === 'dryer') {
-      // 드라이기 검색 시 의류건조기, 청소기 제외, 특정 브랜드 명시
-      q = `2026년 헤어드라이기 추천 JMW 다이슨 슈퍼소닉 유닉스 레이트 -의류 -건조기 -청소기 -세탁기 -스타일러`;
+      // 드라이기: 청소기/세탁기 브랜드명 직접 제외
+      q = `2026년 헤어드라이기 추천 JMW 다이슨 유닉스 레이트 샤크 -코드제로 -A9 -청소기 -건조기 -스타일러 -세탁기 -트롬 -그랑데 -비스포크 -Bespoke`;
     }
     else if (category === 'cleaner') {
-      // 청소기
+      // 청소기: 드라이기/세탁기 제외
       q = `2026년 무선청소기 로봇청소기 추천 순위 -세탁기 -드라이기`;
     }
     else if (category === 'accessory') {
@@ -38,26 +38,26 @@ export async function POST(req: Request) {
 
     const searchContext = await searchWeb(q);
 
-    // 2. 🧠 AI 검열 프롬프트 강화
+    // 2. 🧠 AI 검열 프롬프트: 블랙리스트 적용
     let strictRules = "";
     if (category === 'desktop') {
       strictRules = `
-        [🚨 데스크탑 필터링]
-        - **노트북(Laptop) 절대 금지:** 'LG 그램', '삼성 갤럭시북', 'MacBook' 등 휴대용 PC는 데스크탑이 아닙니다. 무조건 제외하세요.
-        - 본체(Mainframe) 위주로 선정하세요.
+        [🚨 데스크탑 강력 필터링]
+        1. **절대 금지 키워드:** 제목에 'Gram', '그램', 'Galaxy Book', '갤럭시북', 'MacBook', 'Laptop'이 포함되면 무조건 버리세요.
+        2. 오직 '본체(Main body)', '조립 PC', '타워형 데스크탑'만 포함하세요.
       `;
     } else if (category === 'dryer') {
       strictRules = `
-        [🚨 드라이기 필터링]
-        - **헤어드라이기(Hair Dryer)만 허용:** 머리카락을 말리는 용도만 포함하세요.
-        - **의류 가전 금지:** '건조기(Clothes Dryer)', '세탁기', '스타일러' 절대 제외.
-        - **청소기 금지:** '코드제로(CordZero)', '청소기' 관련 제품 절대 제외.
-        - **없는 제품 창조 금지:** 삼성전자는 헤어드라이기를 거의 만들지 않습니다. 확실한 모델(예: 다이슨 슈퍼소닉, JMW, 유닉스 등)이 아니면 제외하세요.
+        [🚨 드라이기 강력 필터링]
+        1. **헤어드라이기(Hair Dryer)만 허용:** 머리 말리는 기계가 아니면 즉시 폐기하세요.
+        2. **브랜드 주의:** 'LG 코드제로(CordZero)', 'LG A9'은 청소기입니다. '삼성 비스포크(Bespoke)'는 주로 가전입니다.
+        3. **절대 금지:** '코드제로', '청소기', '건조기(Clothes Dryer)', '트롬', '그랑데' 단어가 보이면 절대 목록에 넣지 마세요.
+        4. **추천 브랜드:** 다이슨(Dyson), JMW, 유닉스(Unix), 샤크(Shark), 레이트(Laifen), 한일 등 헤어기기 전문 브랜드 위주로 선정하세요.
       `;
     }
 
     const systemPrompt = `
-      당신은 깐깐한 이커머스 MD입니다. 
+      당신은 깐깐한 검수자(Reviewer)입니다. 
       아래 **[검색 결과]**를 바탕으로 '${categoryName}' 카테고리 제품 20개를 선정하세요.
       
       ${searchContext}

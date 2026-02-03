@@ -47,13 +47,13 @@ export async function GET(req: Request) {
 
   try {
     for (const cat of categoriesToProcess) {
-      // 1. 🔍 검색 쿼리 최적화 (Negative Keywords 활용)
+      // 1. 🔍 검색 쿼리: 블랙리스트 키워드 추가
       let q = `${year}년 ${cat.name} 인기순위 추천 가격`;
       
       if (cat.slug === 'desktop') {
-        q = `${year}년 조립컴퓨터 본체 데스크탑 추천 순위 -노트북 -랩톱`;
+        q = `${year}년 조립컴퓨터 본체 데스크탑 추천 순위 -노트북 -랩톱 -그램 -갤럭시북 -맥북`;
       } else if (cat.slug === 'dryer') {
-        q = `${year}년 헤어드라이기 추천 JMW 다이슨 유닉스 -의류 -건조기 -청소기 -세탁기`;
+        q = `${year}년 헤어드라이기 추천 JMW 다이슨 유닉스 샤크 -코드제로 -A9 -비스포크 -의류 -건조기 -청소기 -세탁기`;
       } else if (cat.slug === 'cleaner') {
         q = `${year}년 무선청소기 로봇청소기 추천 -드라이기`;
       } else if (cat.slug === 'accessory') {
@@ -62,13 +62,17 @@ export async function GET(req: Request) {
 
       const searchContext = await searchWeb(q);
 
-      // 2. 🧠 프롬프트 필터링
+      // 2. 🧠 프롬프트 필터링 강화
       let strictRules = "";
-      if (cat.slug === 'desktop') strictRules = "노트북(Laptop), 그램, 갤럭시북 등 휴대용 PC는 절대 제외하세요. 본체만 포함하세요.";
-      if (cat.slug === 'dryer') strictRules = "헤어드라이기(Hair Dryer)만 포함하세요. 의류건조기, 청소기, 세탁기는 절대 금지. 없는 제품 창조 금지.";
+      if (cat.slug === 'desktop') {
+        strictRules = "제목에 '그램', '갤럭시북', '노트북'이 들어간 제품은 무조건 제외하세요. 오직 '본체'만 포함하세요.";
+      }
+      if (cat.slug === 'dryer') {
+        strictRules = "LG 코드제로(청소기), 삼성 비스포크(가전), 의류건조기는 절대 금지입니다. 오직 '헤어드라이기'만 포함하세요.";
+      }
 
       const systemPrompt = `
-        당신은 IT 분석가입니다. 현재: **${todayStr}**
+        당신은 IT 데이터 분석가입니다. 현재: **${todayStr}**
 
         아래 **[검색 결과]**를 분석하여 '${cat.name}' 분야의 **주간 랭킹 TOP 10**을 선정하세요.
         
@@ -76,7 +80,7 @@ export async function GET(req: Request) {
         
         [규칙]
         1. **검색 데이터 기반:** 상상하지 말고 검색 결과에 있는 제품을 쓰세요.
-        2. **카테고리 필터:**
+        2. **필터링:**
            ${strictRules}
         
         [출력 형식 - JSON Only]
