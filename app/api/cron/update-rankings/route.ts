@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
-import { searchWeb } from '@/app/lib/search'; // ⭐
+import { searchWeb } from '@/app/lib/search'; 
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -29,6 +29,7 @@ const CATEGORIES = [
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get('secret');
+  const targetCategory = searchParams.get('category'); 
 
   if (secret !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -38,16 +39,33 @@ export async function GET(req: Request) {
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
   const todayStr = `${year}년 ${month}월 ${Math.ceil(now.getDate() / 7)}주차`;
-  
   const results = [];
 
+  const categoriesToProcess = targetCategory 
+    ? CATEGORIES.filter(c => c.slug === targetCategory) 
+    : CATEGORIES;
+
   try {
-    for (const cat of CATEGORIES) {
-      let q = `${year}년 ${month}월 ${cat.name} 인기순위 추천`;
-      if (cat.slug === 'dryer') q += " 헤어드라이기 -의류건조기";
-      if (cat.slug === 'accessory') q = `알리익스프레스 가성비 IT소품 추천`;
+    for (const cat of categoriesToProcess) {
+      // 1. 🔍 검색 쿼리 최적화 (Negative Keywords 활용)
+      let q = `${year}년 ${cat.name} 인기순위 추천 가격`;
+      
+      if (cat.slug === 'desktop') {
+        q = `${year}년 조립컴퓨터 본체 데스크탑 추천 순위 -노트북 -랩톱`;
+      } else if (cat.slug === 'dryer') {
+        q = `${year}년 헤어드라이기 추천 JMW 다이슨 유닉스 -의류 -건조기 -청소기 -세탁기`;
+      } else if (cat.slug === 'cleaner') {
+        q = `${year}년 무선청소기 로봇청소기 추천 -드라이기`;
+      } else if (cat.slug === 'accessory') {
+        q = `알리익스프레스 가성비 IT소품 추천 베스트`;
+      }
 
       const searchContext = await searchWeb(q);
+
+      // 2. 🧠 프롬프트 필터링
+      let strictRules = "";
+      if (cat.slug === 'desktop') strictRules = "노트북(Laptop), 그램, 갤럭시북 등 휴대용 PC는 절대 제외하세요. 본체만 포함하세요.";
+      if (cat.slug === 'dryer') strictRules = "헤어드라이기(Hair Dryer)만 포함하세요. 의류건조기, 청소기, 세탁기는 절대 금지. 없는 제품 창조 금지.";
 
       const systemPrompt = `
         당신은 IT 분석가입니다. 현재: **${todayStr}**
@@ -58,7 +76,8 @@ export async function GET(req: Request) {
         
         [규칙]
         1. **검색 데이터 기반:** 상상하지 말고 검색 결과에 있는 제품을 쓰세요.
-        2. **드라이기:** 헤어드라이기만 포함하세요.
+        2. **카테고리 필터:**
+           ${strictRules}
         
         [출력 형식 - JSON Only]
         {
