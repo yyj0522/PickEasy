@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
-import { searchWeb } from '@/app/lib/search'; 
+// import { searchWeb } from '@/app/lib/search'; // ❌ 검색 제거
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -12,7 +12,6 @@ const supabase = createClient(
 
 const CATEGORIES = [
   { slug: 'laptop', name: '노트북' },
-  { slug: 'desktop', name: '데스크탑' },
   { slug: 'monitor', name: '모니터' },
   { slug: 'mouse', name: '마우스' },
   { slug: 'keyboard', name: '키보드' },
@@ -47,40 +46,40 @@ export async function GET(req: Request) {
 
   try {
     for (const cat of categoriesToProcess) {
-      // 1. 🔍 검색 쿼리: 블랙리스트 키워드 추가
-      let q = `${year}년 ${cat.name} 인기순위 추천 가격`;
       
-      if (cat.slug === 'desktop') {
-        q = `${year}년 조립컴퓨터 본체 데스크탑 추천 순위 -노트북 -랩톱 -그램 -갤럭시북 -맥북`;
-      } else if (cat.slug === 'dryer') {
-        q = `${year}년 헤어드라이기 추천 JMW 다이슨 유닉스 샤크 -코드제로 -A9 -비스포크 -의류 -건조기 -청소기 -세탁기`;
-      } else if (cat.slug === 'cleaner') {
-        q = `${year}년 무선청소기 로봇청소기 추천 -드라이기`;
-      } else if (cat.slug === 'accessory') {
-        q = `알리익스프레스 가성비 IT소품 추천 베스트`;
-      }
-
-      const searchContext = await searchWeb(q);
-
-      // 2. 🧠 프롬프트 필터링 강화
       let strictRules = "";
-      if (cat.slug === 'desktop') {
-        strictRules = "제목에 '그램', '갤럭시북', '노트북'이 들어간 제품은 무조건 제외하세요. 오직 '본체'만 포함하세요.";
-      }
       if (cat.slug === 'dryer') {
-        strictRules = "LG 코드제로(청소기), 삼성 비스포크(가전), 의류건조기는 절대 금지입니다. 오직 '헤어드라이기'만 포함하세요.";
+        strictRules = `
+          [🚨 드라이기 전용 규칙]
+          1. **오직 '헤어드라이기(Hair Dryer)'만 포함하세요.**
+          2. **절대 금지:** 의류 건조기(Clothes Dryer), 세탁기, 스타일러, 청소기(코드제로, A9).
+          3. **추천 브랜드:** JMW, 유닉스(Unix), 다이슨(Dyson), 레이트(Laifen), 샤크(Shark).
+          4. **주의:** '삼성', 'LG'는 헤어드라이기 주력이 아닙니다. 확실한 모델이 없으면 제외하세요.
+        `;
+      } else if (cat.slug === 'cleaner') {
+        strictRules = `
+          [🚨 청소기 전용 규칙]
+          1. 무선청소기(스틱형)와 로봇청소기만 포함하세요.
+          2. 세탁기, 공기청정기, 드라이기 제외.
+        `;
+      } else if (cat.slug === 'accessory') {
+        strictRules = `
+          [🚨 소품 전용 규칙]
+          1. 알리익스프레스 등에서 인기 있는 가성비 IT 소품(충전기, 케이블, 키캡, 거치대 등) 위주.
+        `;
       }
 
       const systemPrompt = `
-        당신은 IT 데이터 분석가입니다. 현재: **${todayStr}**
+        당신은 IT 트렌드 분석가입니다. 현재 시점: **${todayStr}**
 
-        아래 **[검색 결과]**를 분석하여 '${cat.name}' 분야의 **주간 랭킹 TOP 10**을 선정하세요.
-        
-        ${searchContext}
-        
-        [규칙]
-        1. **검색 데이터 기반:** 상상하지 말고 검색 결과에 있는 제품을 쓰세요.
-        2. **필터링:**
+        '${cat.name}' 카테고리의 **인기 제품 TOP 10**을 선정해주세요.
+        인터넷 검색 없이 당신의 데이터베이스를 바탕으로 **가장 대중적이고 평이 좋은 모델**들을 추천하세요.
+
+        [데이터 작성 규칙]
+        1. **제품명:** 브랜드명 + 모델명 풀네임 (예: LG전자 그램 프로 16)
+        2. **가격:** 2024~2025년 출시가를 기준으로 2026년 물가 상승분을 반영하여 **원화(KRW)로 추정**하세요. (절대 0원이나 빈칸 금지)
+        3. **이유:** 해당 제품이 인기 있는 이유를 한 줄로 요약.
+        4. **필터링:**
            ${strictRules}
         
         [출력 형식 - JSON Only]
@@ -90,8 +89,8 @@ export async function GET(req: Request) {
             {
               "rank": 1,
               "name": "제품명",
-              "price_estimate": "가격(숫자만)",
-              "reason": "이유",
+              "price_estimate": "1500000 (숫자만)",
+              "reason": "가벼운 무게와 긴 배터리 타임",
               "change": "NEW"
             }
           ]
@@ -102,7 +101,7 @@ export async function GET(req: Request) {
         model: "gpt-4o-mini",
         messages: [{ role: "system", content: systemPrompt }],
         response_format: { type: "json_object" },
-        temperature: 0.3,
+        temperature: 0.5, // 창의성 약간 허용 (없는 데이터 채우기 위함)
       });
 
       const rankingData = JSON.parse(completion.choices[0].message.content || "{}");

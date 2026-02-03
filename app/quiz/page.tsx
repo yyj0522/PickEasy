@@ -10,7 +10,6 @@ import Footer from '@/components/layout/Footer';
 
 const CATEGORIES = [
   { id: 'laptop', name: '노트북', icon: Monitor },
-  { id: 'desktop', name: '데스크탑', icon: Cpu },
   { id: 'monitor', name: '모니터', icon: Tv },
   { id: 'mouse', name: '마우스', icon: Mouse },
   { id: 'keyboard', name: '키보드', icon: Keyboard },
