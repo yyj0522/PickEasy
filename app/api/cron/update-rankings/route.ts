@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
+import { searchWeb } from '@/app/lib/search'; // ⭐
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -9,7 +10,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY! 
 );
 
-// 알리익스프레스 전용 카테고리 포함
 const CATEGORIES = [
   { slug: 'laptop', name: '노트북' },
   { slug: 'desktop', name: '데스크탑' },
@@ -26,12 +26,10 @@ const CATEGORIES = [
   { slug: 'accessory', name: 'IT소품/잡화' }
 ];
 
-// ⭐ 중요: 크론잡이나 브라우저 접속은 GET 요청입니다.
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get('secret');
 
-  // 보안 체크
   if (secret !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -39,40 +37,28 @@ export async function GET(req: Request) {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
+  const todayStr = `${year}년 ${month}월 ${Math.ceil(now.getDate() / 7)}주차`;
   
-  // 주차 계산 로직 (간단 버전)
-  const firstDay = new Date(year, month - 1, 1);
-  const dayOfWeek = firstDay.getDay(); 
-  const currentDay = now.getDate();
-  const week = Math.ceil((currentDay + dayOfWeek) / 7);
-  
-  const todayStr = `${year}년 ${month}월 ${week}주차`;
   const results = [];
 
   try {
     for (const cat of CATEGORIES) {
-      // 카테고리별 전략
-      let strategy = "";
-      if (cat.slug === 'accessory') {
-        strategy = `
-          - **알리익스프레스 가성비템 위주:** 천원마트, 꽁돈대첩 등에서 인기 있는 IT 소품(충전기, 케이블, 키캡, 정리함 등)을 선정하세요.
-          - 가격은 알리 직구 평균가(원화)로 책정하세요.
-        `;
-      } else {
-        strategy = `
-          - **국내 최저가(쿠팡/다나와):** 2026년 현재 물가(반도체 폭등 등)를 반영하여, 2024년 대비 약 1.5배 상승한 현실적인 가격을 적으세요.
-          - 최신형(2025~2026년식) 위주로 선정하세요.
-        `;
-      }
+      let q = `${year}년 ${month}월 ${cat.name} 인기순위 추천`;
+      if (cat.slug === 'dryer') q += " 헤어드라이기 -의류건조기";
+      if (cat.slug === 'accessory') q = `알리익스프레스 가성비 IT소품 추천`;
+
+      const searchContext = await searchWeb(q);
 
       const systemPrompt = `
-        당신은 ${year}년 대한민국 IT 트렌드 분석가입니다.
-        현재 시점: **${todayStr}**
+        당신은 IT 분석가입니다. 현재: **${todayStr}**
 
-        '${cat.name}' 분야의 **주간 인기 랭킹 TOP 10**을 선정하세요.
+        아래 **[검색 결과]**를 분석하여 '${cat.name}' 분야의 **주간 랭킹 TOP 10**을 선정하세요.
         
-        [분석 지침]
-        ${strategy}
+        ${searchContext}
+        
+        [규칙]
+        1. **검색 데이터 기반:** 상상하지 말고 검색 결과에 있는 제품을 쓰세요.
+        2. **드라이기:** 헤어드라이기만 포함하세요.
         
         [출력 형식 - JSON Only]
         {
@@ -80,12 +66,11 @@ export async function GET(req: Request) {
           "list": [
             {
               "rank": 1,
-              "name": "정확한 제품명",
+              "name": "제품명",
               "price_estimate": "가격(숫자만)",
-              "reason": "인기 이유 (한 줄 요약)",
-              "change": "NEW" (또는 UP, DOWN, -)
+              "reason": "이유",
+              "change": "NEW"
             }
-            ... (10위까지)
           ]
         }
       `;
@@ -94,28 +79,22 @@ export async function GET(req: Request) {
         model: "gpt-4o-mini",
         messages: [{ role: "system", content: systemPrompt }],
         response_format: { type: "json_object" },
-        temperature: 0.7,
+        temperature: 0.3,
       });
 
       const rankingData = JSON.parse(completion.choices[0].message.content || "{}");
 
-      // DB 저장
       const { error } = await supabase.from('rankings').insert({
         category: cat.slug,
         data: rankingData
       });
 
-      if (error) {
-          console.error(`Error saving ${cat.name}:`, error);
-      } else {
-          results.push({ category: cat.name, status: 'updated' });
-      }
+      if (!error) results.push({ category: cat.name, status: 'updated' });
     }
 
     return NextResponse.json({ success: true, date: todayStr, results });
 
   } catch (error: any) {
-    console.error(error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

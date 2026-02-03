@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
+import { searchWeb } from '@/app/lib/search'; // ⭐
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const supabase = createClient(
@@ -13,25 +14,25 @@ export async function POST(req: Request) {
     const { secret, keyword } = await req.json();
 
     if (secret !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      return NextResponse.json({ error: '비밀번호 오류' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
-    const systemPrompt = `
-      당신은 이커머스 MD입니다. 오늘은 **${today}** 입니다.
-      
-      사용자가 검색한 키워드 "${keyword}"에 해당하는 최신 제품 1개의 정보를 상세하게 작성하세요.
-      
-      [시장 상황 반영]
-      2026년 기준 물가 상승(반도체 폭등)을 반영하여 가격을 책정하세요.
+    // 1. 검색
+    let q = `${keyword} 가격 스펙 최저가`;
+    if (keyword.includes('드라이기')) q += " 헤어드라이기";
+    
+    const searchContext = await searchWeb(q);
 
-      [출력 형식 - JSON Only]
-      {
-        "title": "정확한 제품 풀네임",
-        "price": 1500000,
-        "specs": "핵심 스펙 줄바꿈 요약",
-        "category": "laptop" (키워드를 보고 laptop, desktop, monitor, mouse, keyboard, tablet, cleaner, dryer, audio, massage, watch, camera 중 하나로 자동 분류)
-      }
+    // 2. AI 생성
+    const systemPrompt = `
+      MD 모드. 키워드: "${keyword}"
+      
+      아래 **[검색 결과]**를 보고 제품 정보를 JSON으로 작성하세요.
+      ${searchContext}
+      
+      [주의]
+      - 드라이기 -> 헤어드라이기 (의류건조기 X)
+      - 가격은 검색된 정보 반영
     `;
 
     const completion = await openai.chat.completions.create({
@@ -40,8 +41,8 @@ export async function POST(req: Request) {
       response_format: { type: "json_object" },
     });
 
-    const content = completion.choices[0].message.content;
-    const data = JSON.parse(content || "{}");
+    const data = JSON.parse(completion.choices[0].message.content || "{}");
+
     const { error } = await supabase.from('products').insert({
       title: data.title || keyword,
       price: data.price || 0,
@@ -52,11 +53,9 @@ export async function POST(req: Request) {
     });
 
     if (error) throw error;
-
     return NextResponse.json({ success: true, title: data.title });
 
   } catch (error: any) {
-    console.error("AI Error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
