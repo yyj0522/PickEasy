@@ -30,11 +30,11 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'products' | 'stats'>('products'); // 탭 상태 추가
+  const [activeTab, setActiveTab] = useState<'products' | 'stats'>('products');
   
   const [selectedCat, setSelectedCat] = useState(CATEGORIES[0]);
   const [products, setProducts] = useState<any[]>([]);
-  const [stats, setStats] = useState<any[]>([]); // 통계 데이터 상태
+  const [stats, setStats] = useState<any[]>([]);
 
   useEffect(() => {
     const savedLogin = localStorage.getItem('admin_login');
@@ -63,7 +63,6 @@ export default function AdminPage() {
     setPassword('');
   };
 
-  // --- 제품 관리 관련 함수 ---
   const fetchProducts = async (catSlug: string) => {
     try {
       const res = await fetch('/api/admin/get-products', {
@@ -108,9 +107,11 @@ export default function AdminPage() {
 
   const updateProduct = async (id: string, updates: any) => {
     const { error } = await supabase.from('products').update(updates).eq('id', id);
-    if (!error) {
-      setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+    if (error) {
+      alert("수정 실패: " + error.message);
+      return;
     }
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   };
 
   const approveProduct = async (item: any) => {
@@ -133,12 +134,18 @@ export default function AdminPage() {
   };
 
   const deleteProduct = async (id: string) => {
-    if(!confirm("삭제하시겠습니까?")) return;
-    await supabase.from('products').delete().eq('id', id);
+    if(!confirm("정말로 삭제하시겠습니까?")) return;
+    
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    
+    if (error) {
+      alert("삭제 실패: " + error.message + "\nSupabase RLS 설정을 확인해주세요.");
+      return;
+    }
+
     setProducts(prev => prev.filter(p => p.id !== id));
   };
 
-  // --- 통계 관련 함수 ---
   const fetchStats = async () => {
     try {
       const res = await fetch('/api/admin/get-stats', {
@@ -201,7 +208,6 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* 탭 메뉴 */}
         <div className="flex gap-2 mb-6 border-b border-gray-200 pb-1">
           <button 
             onClick={() => setActiveTab('products')}
@@ -217,7 +223,6 @@ export default function AdminPage() {
           </button>
         </div>
         
-        {/* --- 탭 1: 제품 관리 --- */}
         {activeTab === 'products' && (
           <>
             <div className="bg-white p-4 rounded-xl shadow-sm border mb-6 flex flex-wrap gap-4 items-center sticky top-4 z-30">
@@ -309,7 +314,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* --- 탭 2: 인기 검색어 통계 --- */}
         {activeTab === 'stats' && (
           <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
             <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
