@@ -94,6 +94,7 @@ export default function RankPage() {
             </button>
           ))}
         </div>
+        
         {loading ? (
           <div className="py-20 text-center text-gray-400 flex flex-col items-center">
             <Loader2 className="w-8 h-8 animate-spin mb-2" />
@@ -118,22 +119,24 @@ export default function RankPage() {
                     {item.rank}
                   </div>
                   
-                  <div className="flex-1 text-center md:text-left w-full">
+                  <div className="flex-1 text-center md:text-left w-full min-w-0">
                     <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1 justify-center md:justify-start">
-                      <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition">
+                      <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition truncate">
                         {item.name}
                       </h3>
                       {item.change === 'NEW' && (
-                        <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold w-fit mx-auto md:mx-0">NEW</span>
+                        <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold w-fit mx-auto md:mx-0 shrink-0">NEW</span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 mb-2">{item.reason}</p>
+                    <p className="text-sm text-gray-500 mb-2 line-clamp-1">{item.reason}</p>
                     <div className="text-sm font-bold text-gray-900">
-                      예상가: {parseInt(item.price_estimate).toLocaleString()}원
+                      예상가: {typeof item.price_estimate === 'number' ? item.price_estimate.toLocaleString() : item.price_estimate}원
                     </div>
                   </div>
 
-                  <BuyButton keyword={item.name} />
+                  <div className="w-full md:w-auto shrink-0 mt-2 md:mt-0">
+                    <BuyButton keyword={item.name} className="w-full md:w-auto" />
+                  </div>
                 </div>
               ))
             )}

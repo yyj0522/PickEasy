@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
-// import { searchWeb } from '@/app/lib/search'; // ❌ 검색 제거
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -77,7 +76,9 @@ export async function GET(req: Request) {
 
         [데이터 작성 규칙]
         1. **제품명:** 브랜드명 + 모델명 풀네임 (예: LG전자 그램 프로 16)
-        2. **가격:** 2024~2025년 출시가를 기준으로 2026년 물가 상승분을 반영하여 **원화(KRW)로 추정**하세요. (절대 0원이나 빈칸 금지)
+        2. **가격 (중요):** 2024~2025년 출시가를 기준으로 2026년 물가 상승분을 반영하여 **원화(KRW) 숫자만** 입력하세요.
+           - 예: 1500000 (O), 150만원 (X), 1,500,000 (X)
+           - **절대로 0원이나 빈칸으로 두지 마세요. 어떻게든 추정치를 넣으세요.**
         3. **이유:** 해당 제품이 인기 있는 이유를 한 줄로 요약.
         4. **필터링:**
            ${strictRules}
@@ -89,7 +90,7 @@ export async function GET(req: Request) {
             {
               "rank": 1,
               "name": "제품명",
-              "price_estimate": "1500000 (숫자만)",
+              "price_estimate": 1500000,
               "reason": "가벼운 무게와 긴 배터리 타임",
               "change": "NEW"
             }
@@ -101,10 +102,29 @@ export async function GET(req: Request) {
         model: "gpt-4o-mini",
         messages: [{ role: "system", content: systemPrompt }],
         response_format: { type: "json_object" },
-        temperature: 0.5, // 창의성 약간 허용 (없는 데이터 채우기 위함)
+        temperature: 0.5,
       });
 
       const rankingData = JSON.parse(completion.choices[0].message.content || "{}");
+
+      if (rankingData.list && Array.isArray(rankingData.list)) {
+        rankingData.list = rankingData.list.map((item: any) => {
+          let price = item.price_estimate;
+          
+          if (typeof price === 'string') {
+            price = parseInt(price.replace(/[^0-9]/g, ''));
+          }
+          
+          if (isNaN(price) || price === 0) {
+            price = 100000; 
+          }
+
+          return {
+            ...item,
+            price_estimate: price
+          };
+        });
+      }
 
       const { error } = await supabase.from('rankings').insert({
         category: cat.slug,
