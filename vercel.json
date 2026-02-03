@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/admin/get-products?secret=gktmtmxhs@12git add .",
+      "path": "/api/cron/update-rankings?secret=gktmtmxhs@12",
       "schedule": "0 0 * * 1"
     }
   ]
