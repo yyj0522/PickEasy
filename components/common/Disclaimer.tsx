@@ -5,7 +5,7 @@ export default function Disclaimer() {
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 my-6 flex gap-3 items-start shadow-sm">
       <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
       <div className="text-sm text-amber-900">
-        <strong className="block font-bold mb-1">⚠️ 구매 전 필독 (면책 조항)</strong>
+        <strong className="block font-bold mb-1">구매 전 필독 (면책 조항)</strong>
         <p className="leading-relaxed opacity-90">
           이 견적은 AI가 실시간으로 분석한 참고용 데이터입니다. 
           <span className="font-bold underline decoration-amber-500 underline-offset-2 ml-1">

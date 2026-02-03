@@ -91,7 +91,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                   <Info className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
                   <div className="space-y-2">
                     <p className="font-bold text-gray-800">
-                      💰 제휴 마케팅 활동 안내
+                      제휴 마케팅 활동 안내
                     </p>
                     <p>
                       본 사이트는 <strong>링크프라이스</strong> 및 <strong>쿠팡 파트너스</strong> 활동의 일환으로, 
