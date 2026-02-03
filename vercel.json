@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/get-products?secret=gktmtmxhs@12git add .",
+      "schedule": "0 0 * * 1"
+    }
+  ]
+}
