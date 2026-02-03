@@ -21,7 +21,7 @@ const CATEGORIES = [
   { slug: 'dryer', name: '드라이기' },
   { slug: 'audio', name: '음향기기' },
   { slug: 'massage', name: '안마기' },
-  { slug: 'smartwatch', name: '워치' },
+  { slug: 'watch', name: '워치' },
   { slug: 'camera', name: '카메라' },
 ];
 
@@ -91,8 +91,8 @@ export default function AdminPage() {
       });
 
       if (!res.ok) {
-         const errorText = await res.text();
-         throw new Error(errorText);
+          const errorText = await res.text();
+          throw new Error(errorText);
       }
 
       const data = await res.json();
@@ -116,8 +116,40 @@ export default function AdminPage() {
     }
   };
 
-  const approveProduct = async (id: string) => {
-    await updateProduct(id, { status: 'APPROVED' });
+  const approveProduct = async (item: any) => {
+    if (!item.affiliate_url && !confirm("커미션 링크가 비어있습니다. 승인하시겠습니까? (쿠팡 검색으로 연결됨)")) {
+      return;
+    }
+
+    try {
+      const { error: productError } = await supabase
+        .from('products')
+        .update({ status: 'APPROVED' })
+        .eq('id', item.id);
+
+      if (productError) throw productError;
+
+      if (item.affiliate_url) {
+        const { error: linkError } = await supabase
+          .from('affiliate_links')
+          .upsert(
+            { 
+              keyword: item.title, 
+              url: item.affiliate_url,
+              created_at: new Date().toISOString() 
+            }, 
+            { onConflict: 'keyword' }
+          );
+        
+        if (linkError) console.error("링크 동기화 실패:", linkError);
+      }
+
+      setProducts(prev => prev.map(p => p.id === item.id ? { ...p, status: 'APPROVED' } : p));
+      alert("승인 및 링크 동기화 완료!");
+
+    } catch (e: any) {
+      alert("승인 중 오류 발생: " + e.message);
+    }
   };
 
   const deleteProduct = async (id: string) => {
@@ -148,7 +180,6 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-[1800px] mx-auto">
-        {/* 헤더 */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-gray-900">🛠️ 제품 관리</h1>
@@ -160,7 +191,6 @@ export default function AdminPage() {
           </div>
         </div>
         
-        {/* 툴바 */}
         <div className="bg-white p-4 rounded-xl shadow-sm border mb-6 flex flex-wrap gap-4 items-center sticky top-4 z-30">
           <select 
             className="border-2 border-gray-100 p-2.5 rounded-lg font-bold text-gray-700 outline-none focus:border-blue-500"
@@ -180,11 +210,10 @@ export default function AdminPage() {
           </button>
           
           <div className="ml-auto text-sm text-gray-500">
-             총 <strong className="text-black">{products.length}</strong>개
+              총 <strong className="text-black">{products.length}</strong>개
           </div>
         </div>
 
-        {/* ✅ 그리드 강제 고정: PC에서 무조건 3개 (md:grid-cols-3) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-20">
           {products.map((item) => (
             <div 
@@ -195,7 +224,6 @@ export default function AdminPage() {
                 ${item.status === 'APPROVED' ? 'border-green-400 ring-1 ring-green-400' : 'border-gray-200'}
               `}
             >
-              {/* 이미지 영역 */}
               <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden border-b border-gray-50">
                 {item.image_url ? (
                   <img 
@@ -209,15 +237,12 @@ export default function AdminPage() {
                     <ImageIcon className="w-8 h-8 opacity-30"/> <span>No Image</span>
                   </div>
                 )}
-                {/* 상태 뱃지 */}
                 <div className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm ${item.status === 'APPROVED' ? 'bg-green-500 text-white' : 'bg-yellow-400 text-black'}`}>
                   {item.status}
                 </div>
               </div>
 
-              {/* 정보 입력 영역 */}
               <div className="p-4 flex flex-col gap-3 flex-1">
-                {/* 제목 */}
                 <input 
                   className="font-bold text-base w-full bg-transparent border-b border-transparent focus:border-gray-300 outline-none pb-1 truncate"
                   defaultValue={item.title}
@@ -226,7 +251,6 @@ export default function AdminPage() {
                   onBlur={(e) => updateProduct(item.id, { title: e.target.value })}
                 />
                 
-                {/* 스펙 */}
                 <textarea 
                     className="w-full text-xs text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-transparent focus:bg-white focus:border-gray-300 outline-none resize-none h-28 leading-relaxed scrollbar-hide"
                     defaultValue={item.specs}
@@ -234,17 +258,16 @@ export default function AdminPage() {
                     onBlur={(e) => updateProduct(item.id, { specs: e.target.value })}
                 />
 
-                {/* 가격 및 URL */}
                 <div className="grid grid-cols-2 gap-2 mt-auto">
                   <div className="relative">
-                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₩</span>
-                     <input 
-                       className="text-sm font-bold border p-2 pl-6 rounded-lg w-full bg-gray-50 focus:bg-white focus:border-gray-300 outline-none" 
-                       defaultValue={item.price}
-                       type="number"
-                       placeholder="가격"
-                       onBlur={(e) => updateProduct(item.id, { price: parseInt(e.target.value) || 0 })}
-                     />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">₩</span>
+                      <input 
+                        className="text-sm font-bold border p-2 pl-6 rounded-lg w-full bg-gray-50 focus:bg-white focus:border-gray-300 outline-none" 
+                        defaultValue={item.price}
+                        type="number"
+                        placeholder="가격"
+                        onBlur={(e) => updateProduct(item.id, { price: parseInt(e.target.value) || 0 })}
+                      />
                   </div>
                   <input 
                     className="text-xs border p-2 rounded-lg w-full bg-gray-50 focus:bg-white focus:border-gray-300 outline-none text-gray-500 truncate" 
@@ -254,30 +277,28 @@ export default function AdminPage() {
                   />
                 </div>
 
-                {/* 파트너스 링크 */}
                 <div className="flex gap-2 items-center">
-                   <input 
-                     className="flex-1 text-xs border border-blue-100 p-2 rounded-lg bg-blue-50/50 focus:bg-white focus:border-blue-400 outline-none text-blue-600 truncate" 
-                     placeholder="파트너스 수익 링크"
-                     defaultValue={item.affiliate_url}
-                     onBlur={(e) => updateProduct(item.id, { affiliate_url: e.target.value })}
-                   />
-                   <a 
-                     href={`https://www.coupang.com/np/search?q=${encodeURIComponent(item.title || '')}`} 
-                     target="_blank" 
-                     className="w-8 h-8 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-500 flex items-center justify-center shrink-0"
-                     title="쿠팡 검색"
-                   >
-                     <Search className="w-4 h-4" />
-                   </a>
+                    <input 
+                      className="flex-1 text-xs border border-blue-100 p-2 rounded-lg bg-blue-50/50 focus:bg-white focus:border-blue-400 outline-none text-blue-600 truncate" 
+                      placeholder="파트너스 수익 링크"
+                      defaultValue={item.affiliate_url}
+                      onBlur={(e) => updateProduct(item.id, { affiliate_url: e.target.value })}
+                    />
+                    <a 
+                      href={`https://www.coupang.com/np/search?q=${encodeURIComponent(item.title || '')}`} 
+                      target="_blank" 
+                      className="w-8 h-8 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-500 flex items-center justify-center shrink-0"
+                      title="쿠팡 검색"
+                    >
+                      <Search className="w-4 h-4" />
+                    </a>
                 </div>
               </div>
 
-              {/* 하단 버튼 */}
               <div className="flex border-t border-gray-100 divide-x divide-gray-100">
                 {item.status !== 'APPROVED' ? (
                   <button 
-                    onClick={() => approveProduct(item.id)}
+                    onClick={() => approveProduct(item)}
                     className="flex-1 bg-green-50 text-green-700 hover:bg-green-600 hover:text-white py-3 text-sm font-bold transition flex items-center justify-center gap-1.5"
                   >
                     <Check className="w-4 h-4" /> 승인
