@@ -1,114 +1,129 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { checkRateLimit } from '@/app/lib/rate-limit';
+import { checkRateLimit } from '@/app/lib/rate-limit'; 
 import { headers } from 'next/headers';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: Request) {
   const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for") || "unknown";
-
+  const ip = headersList.get("x-forwarded-for") || "unknown"; 
+  
   if (!checkRateLimit(ip)) {
-    return NextResponse.json(
-      { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }, { status: 429 });
   }
 
   try {
-    const body = await req.json();
-    const { type, budget, usage, preferences, previousResult, refinementRequest } = body;
+    const { category, answers, query, type, previousResult, refinementRequest, budget, usage, preferences } = await req.json();
 
-    if (JSON.stringify(body).length > 2000) {
-      return NextResponse.json({ error: "입력 내용이 너무 깁니다." }, { status: 400 });
+    if (query && query.trim().length < 2) {
+      return NextResponse.json({ error: "질문이 너무 짧습니다. 구체적으로 알려주세요." }, { status: 400 });
+    }
+    if (refinementRequest && refinementRequest.trim().length < 2) {
+      return NextResponse.json({ error: "수정 요청 내용이 너무 짧습니다." }, { status: 400 });
     }
 
     const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    const commonConstraints = `
-      [치명적 오류 방지 및 강제 규칙]
-      1. **절대 노트북(Laptop)을 추천하지 마세요.** 사용자가 'PC'라고 말해도 이는 '데스크탑 본체'를 의미합니다.
-      2. 완제품 PC(예: 삼성 매직스테이션) 모델명을 출력하지 말고, **반드시 개별 조립 부품(Component)**을 선정하세요.
-      3. 결과는 무조건 [CPU, 메인보드, 메모리, 그래픽카드, SSD, 케이스, 파워] 7가지 부품으로 구성되어야 합니다.
-      4. 부품명은 한국 다나와/쇼핑몰에서 검색 가능한 **정확한 풀네임**이어야 합니다.
-      5. 가격은 현재 한국 시장의 최저가 근사치(원화 숫자만)로 작성하세요.
+    const marketContext = `
+      [현재 시장 상황: 2026년 2월]
+      1. **메모리(RAM)/SSD 가격 폭등:** 반도체 수급 이슈로 인해 작년 대비 가격이 2~3배 상승했습니다. (예: DDR5 16GB 기준 10만원 중반대 형성)
+      2. **환율 영향:** 고환율로 인해 수입 부품(CPU, GPU) 가격이 전체적으로 높게 형성되어 있습니다.
+      3. **최신 부품:** 인텔 15세대(Arrow Lake), AMD 라이젠 9000 시리즈, RTX 50 시리즈가 주력 현역 모델입니다.
+      ⚠️ 중요: 견적 산출 시 위 '폭등한 가격'을 반드시 반영하여 예산 초과 여부를 엄격히 판단하세요.
     `;
 
     let systemPrompt = "";
-    let userPrompt = "";
+    let userContent = "";
 
     if (type === 'refine') {
       systemPrompt = `
-        당신은 대한민국 최고의 조립 PC 하드웨어 전문가입니다.
-        현재 날짜는 **${today}** 입니다.
-
-        사용자가 기존 조립 PC 견적에서 수정을 요청했습니다.
-        기존 부품 리스트를 바탕으로, 요청 사항(${refinementRequest})을 반영하여 **데스크탑 부품 구성**을 수정하세요.
+        당신은 대한민국 용산 전자상가의 20년 경력 PC 견적 전문가입니다.
+        오늘은 **${today}** 입니다.
         
-        ${commonConstraints}
+        ${marketContext}
 
-        [수정 가이드]
-        1. 요청과 무관한 부품은 가급적 유지하되, 호환성이 깨진다면(예: CPU 변경 시 메인보드 변경) 반드시 함께 수정하세요.
-        2. 부품은 단종된 구형이 아닌, 현재 시장에서 구매 가능한 최신 부품(2024~2026년 주력)으로 구성하세요.
-        3. 출력 형식은 처음과 동일한 JSON 포맷이어야 합니다.
-        4. summary에는 무엇을 변경했는지, 왜 변경했는지 구체적으로 설명하세요.
+        [임무]
+        사용자의 수정 요청을 반영하여 견적을 다시 짜주세요.
+        단, 수정 요청이 PC 견적과 전혀 관련 없는 내용(예: "점심 메뉴 추천해줘", "노래 불러줘")이거나, 
+        비속어/무의미한 문자열이라면 **반드시** JSON의 error 필드에 사유를 넣어 반환하세요.
+
+        [출력 형식 - JSON Only]
+        성공 시: { "summary": "...", "parts": [...] } (기존 포맷 유지)
+        실패 시: { "error": "PC 견적과 관련 없는 요청입니다." }
       `;
-      userPrompt = `
+      userContent = `
         [기존 견적]: ${JSON.stringify(previousResult)}
         [수정 요청]: "${refinementRequest}"
-        위 내용을 반영해 다시 JSON으로 출력해줘. 노트북 절대 금지.
       `;
-    } else {
+    } 
+    else if (type === 'initial') {
       systemPrompt = `
-        당신은 20년 경력의 조립 PC 전문 견적가입니다.
-        현재 날짜는 **${today}** 입니다.
+        당신은 깐깐한 PC 하드웨어 분석가입니다.
+        오늘은 **${today}** 입니다.
 
-        사용자의 예산(${budget}), 용도(${usage}), 선호사항(${preferences})에 맞춰 
-        현재 시점에서 구매 가능한 **최신 데스크탑 조립 부품**들로 최적의 견적을 제안하세요.
+        ${marketContext}
 
-        ${commonConstraints}
-
-        [부품 선정 원칙]
-        1. **최신성:** CPU/GPU는 최신 세대(인텔 13/14세대, 라이젠 7000/8000/9000번대, RTX 40 시리즈 등)를 최우선으로 고려하세요.
-        2. **호환성:** 메인보드 소켓(LGA1700/AM5), 램 규격(DDR4/5), 파워 용량, 케이스 크기 등을 완벽히 검증하세요.
-        3. **밸런스:** 예산 내에서 CPU와 그래픽카드의 성능 병목이 없도록 구성하세요.
+        사용자의 예산(${budget}), 용도(${usage}), 요청사항(${preferences})을 분석해 최적의 견적을 만드세요.
         
+        [필수 검증]
+        예산이나 용도에 비속어가 있거나, "아무거나", "ㅁㄴㅇㄹ" 같은 무의미한 입력이 들어오면 거절하세요.
+
         [출력 형식 - JSON Only]
-        {
-          "summary": "견적 요약 및 선정 이유 (한 줄)",
-          "parts": [
-            { "type": "CPU", "name": "제품명", "price_estimate": 0, "reason": "이유" },
-            { "type": "메인보드", "name": "제품명", "price_estimate": 0, "reason": "..." },
-            { "type": "메모리", "name": "제품명", "price_estimate": 0, "reason": "..." },
-            { "type": "그래픽카드", "name": "제품명", "price_estimate": 0, "reason": "..." },
-            { "type": "SSD", "name": "제품명", "price_estimate": 0, "reason": "..." },
-            { "type": "케이스", "name": "제품명", "price_estimate": 0, "reason": "..." },
-            { "type": "파워", "name": "제품명", "price_estimate": 0, "reason": "..." }
-          ]
-        }
+        성공 시: { "summary": "...", "parts": [...] }
+        실패 시: { "error": "유효하지 않은 요청입니다. 예산과 용도를 정확히 입력해주세요." }
       `;
-      userPrompt = "최적의 데스크탑 조립 견적을 짜주세요.";
+      userContent = "최적의 데스크탑 조립 견적을 짜주세요.";
+    }
+    else {
+      if (query) {
+        userContent = `사용자 질문: "${query}"`;
+        systemPrompt = `
+          당신은 IT/가전 쇼핑 큐레이터입니다.
+          오늘은 **${today}** 입니다.
+          
+          ${marketContext}
+
+          사용자의 질문을 분석하여 카테고리를 판단하고 제품을 추천하세요.
+
+          [치명적 오류 방지 & 비용 최적화]
+          1. 질문이 IT/가전 제품 추천과 관련이 없다면(예: 연애상담, 주식추천, 날씨), 즉시 거절 응답을 보내세요.
+          2. 질문이 너무 모호해서 판단이 불가능하면 거절하세요.
+
+          [출력 형식 - JSON Only]
+          성공 시: { "analysis": "...", "recommendations": [...] }
+          실패/거절 시: { "error": "IT 가전 제품 추천과 관련된 질문만 답변 가능합니다." }
+        `;
+      } else {
+        userContent = `사용자 선택 답변: ${JSON.stringify(answers)}`;
+        systemPrompt = `
+          사용자가 선택한 카테고리 [${category}]에 맞춰 2026년 최신 제품 3개를 추천하세요.
+          ${marketContext}
+          가격은 반드시 현재 시세(폭등 반영)를 기준으로 작성하세요.
+        `;
+      }
     }
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
+        { role: "user", content: userContent }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.7,
+      temperature: 0.3, 
     });
 
     const result = JSON.parse(completion.choices[0].message.content || "{}");
+
+    if (result.error) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
     return NextResponse.json(result);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('OpenAI Error:', error);
-    return NextResponse.json(
-      { error: 'AI 서버 통신 중 오류가 발생했습니다.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'AI 분석 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
