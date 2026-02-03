@@ -11,7 +11,7 @@ export default function Header() {
           <div className="relative" style={{ width: '144px', height: '40px' }}>
             <Image 
               src="/logo.png" 
-              alt="EasyPick Logo" 
+              alt="PickEasy Logo" 
               fill // 부모 컨테이너를 꽉 채우도록 설정
               sizes="288px" // 실제 width(144)의 2배를 할당하여 고해상도 픽셀 밀도 대응
               className="object-contain"

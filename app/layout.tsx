@@ -8,8 +8,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | EasyPick',
-    default: 'EasyPick - AI 기반 IT 제품 추천 & 최저가 비교',
+    template: '%s | PickEasy',
+    default: 'PickEasy - AI 기반 IT 제품 추천 & 최저가 비교',
   },
   description: "결정장애 해결! 노트북, PC견적, 가전제품을 AI가 분석하여 최적의 모델을 추천해드립니다.",
   icons: {
@@ -22,12 +22,12 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'EasyPick - AI 쇼핑 큐레이터',
+    title: 'PickEasy - AI 쇼핑 큐레이터',
     description: '고민은 AI가, 선택은 쉽고 빠르게.',
     type: 'website',
     locale: 'ko_KR',
     url: 'https://www.easypick-ai.com',
-    siteName: 'EasyPick',
+    siteName: 'PickEasy',
     images: [
       {
         url: 'https://www.easypick-ai.com/logo.png',

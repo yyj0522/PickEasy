@@ -91,7 +91,7 @@ export default function PCBuilderPage() {
       });
       
       const link = document.createElement('a');
-      link.download = `EasyPick_PC견적_${new Date().getTime()}.png`;
+      link.download = `PickEasy_PC견적_${new Date().getTime()}.png`;
       link.href = dataUrl;
       link.click();
     } catch (error) {
@@ -105,7 +105,7 @@ export default function PCBuilderPage() {
   const handleShare = async () => {
     if (!result) return;
 
-    const shareText = `[EasyPick AI 조립PC 견적]\n\n` +
+    const shareText = `[PickEasy AI 조립PC 견적]\n\n` +
       `💡 요약: ${result.summary}\n\n` +
       result.parts.map((p: any) => `- ${p.type}: ${p.name}`).join('\n') +
       `\n\n👉 견적 받으러 가기: ${window.location.origin}/pc-builder`;
@@ -113,7 +113,7 @@ export default function PCBuilderPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'EasyPick AI 견적',
+          title: 'PickEasy AI 견적',
           text: shareText,
           url: window.location.href,
         });
@@ -198,7 +198,7 @@ export default function PCBuilderPage() {
                         <Cpu className="w-5 h-5 text-blue-600" /> 
                         AI 맞춤 견적서
                     </h2>
-                    <span className="text-xs bg-white border border-blue-100 px-2 py-1 rounded font-medium text-blue-600">EasyPick</span>
+                    <span className="text-xs bg-white border border-blue-100 px-2 py-1 rounded font-medium text-blue-600">PickEasy</span>
                 </div>
                 <p className="text-blue-800 text-sm leading-relaxed">{result.summary}</p>
               </div>
