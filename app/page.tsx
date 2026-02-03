@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'; 
 import Link from 'next/link';
-import { Search, Monitor, Armchair, Fan, Calculator, Swords, TrendingUp, Cpu, Tv, Mouse, Keyboard, Tablet, Wind, Headphones, Watch, Camera, Plug } from 'lucide-react'; // ⭐ Plug 추가
+import { Search, Monitor, Armchair, Fan, Calculator, Swords, TrendingUp, Tv, Mouse, Keyboard, Tablet, Wind, Headphones, Watch, Camera, Plug } from 'lucide-react'; 
 import Footer from '@/components/layout/Footer';
 
 export default function Home() {

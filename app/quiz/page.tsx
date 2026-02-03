@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react'; 
-import { useSearchParams, useRouter } from 'next/navigation'; 
+import { useSearchParams} from 'next/navigation'; 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Monitor, Fan, Armchair, ChevronRight, Loader2, Cpu, Tv, Mouse, Keyboard, Tablet, Wind, Headphones, Watch, Camera, Plug } from 'lucide-react';
+import { Monitor, Fan, Armchair, ChevronRight, Loader2, Tv, Mouse, Keyboard, Tablet, Wind, Headphones, Watch, Camera, Plug } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import BuyButton from '@/components/common/BuyButton';
 import Footer from '@/components/layout/Footer';
