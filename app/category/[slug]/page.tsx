@@ -37,7 +37,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const categoryName = slug ? slug.toUpperCase() : '';
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-4 py-12 flex-1 w-full">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-2 text-gray-900">{categoryName} 추천 리스트</h1>

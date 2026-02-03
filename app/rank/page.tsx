@@ -55,7 +55,7 @@ export default function RankPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-12 w-full flex-1">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold flex items-center justify-center gap-2 mb-3">
