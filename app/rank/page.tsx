@@ -25,6 +25,7 @@ const TABS = [
   { slug: 'massage', name: '안마기' },
   { slug: 'watch', name: '워치' },
   { slug: 'camera', name: '카메라' },
+  { slug: 'accessory', name: 'IT소품/잡화' },
 ];
 
 export default function RankPage() {
