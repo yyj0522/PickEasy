@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Loader2, TrendingUp, AlertCircle, Mail } from 'lucide-react'; // 아이콘 추가
+import { Loader2, TrendingUp, AlertCircle, Mail } from 'lucide-react'; 
 import BuyButton from '@/components/common/BuyButton';
 import Footer from '@/components/layout/Footer';
 
@@ -13,7 +13,6 @@ const supabase = createClient(
 
 const TABS = [
   { slug: 'laptop', name: '노트북' },
-  // { slug: 'desktop', name: '데스크탑' }, // ❌ 삭제됨
   { slug: 'monitor', name: '모니터' },
   { slug: 'mouse', name: '마우스' },
   { slug: 'keyboard', name: '키보드' },
@@ -58,8 +57,6 @@ export default function RankPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-12 w-full flex-1">
-        
-        {/* 헤더 영역 */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold flex items-center justify-center gap-2 mb-3">
             <TrendingUp className="text-blue-600" />
@@ -68,22 +65,20 @@ export default function RankPage() {
           <p className="text-gray-500">AI가 빅데이터를 분석하여 선정한 인기 순위입니다.</p>
         </div>
 
-        {/* ⭐ 베타 서비스 & 제보 안내 문구 (추가됨) */}
         <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-sm text-gray-700">
-            <p className="font-bold text-blue-800 mb-1">📢 Beta 서비스 안내</p>
+            <p className="font-bold text-blue-800 mb-1">Beta 서비스 안내</p>
             <p className="leading-relaxed mb-2">
               본 랭킹은 AI가 분석한 트렌드 지표로, 실제 판매량과 차이가 있을 수 있으며 일부 부정확한 정보가 포함될 수 있습니다.
             </p>
             <p className="flex items-center gap-1 text-gray-500 text-xs">
               <Mail className="w-3 h-3" />
-              잘못된 정보 제보 및 의견은 <strong>contact@easypick.com</strong>으로 보내주세요. 여러분의 제보가 AI를 똑똑하게 만듭니다.
+              잘못된 정보 제보 및 의견은 <strong>projectc029@gmail.com</strong>으로 보내주세요. 여러분의 제보가 AI를 똑똑하게 만듭니다.
             </p>
           </div>
         </div>
 
-        {/* 탭 메뉴 (가로 스크롤) */}
         <div className="flex overflow-x-auto gap-2 pb-4 mb-4 scrollbar-hide">
           {TABS.map((tab) => (
             <button
@@ -99,8 +94,6 @@ export default function RankPage() {
             </button>
           ))}
         </div>
-
-        {/* 랭킹 리스트 */}
         {loading ? (
           <div className="py-20 text-center text-gray-400 flex flex-col items-center">
             <Loader2 className="w-8 h-8 animate-spin mb-2" />

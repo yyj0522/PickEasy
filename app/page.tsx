@@ -103,7 +103,6 @@ export default function Home() {
         <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
           {[
             { name: "노트북", icon: Monitor, slug: "laptop" },
-            { name: "데스크탑", icon: Cpu, slug: "desktop" },
             { name: "모니터", icon: Tv, slug: "monitor" },
             { name: "마우스", icon: Mouse, slug: "mouse" },
             { name: "키보드", icon: Keyboard, slug: "keyboard" },
@@ -114,7 +113,7 @@ export default function Home() {
             { name: "안마기", icon: Armchair, slug: "massage" },
             { name: "워치", icon: Watch, slug: "watch" },
             { name: "카메라", icon: Camera, slug: "camera" },
-            { name: "IT소품/잡화", icon: Plug, slug: "accessory" }, // ⭐ 추가됨
+            { name: "IT소품/잡화", icon: Plug, slug: "accessory" }, 
           ].map((cat) => (
             <Link key={cat.slug} href={`/category/${cat.slug}`} className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-white border border-gray-100 hover:border-blue-500 hover:shadow-md transition-all group">
               <cat.icon className="w-8 h-8 text-gray-400 group-hover:text-blue-600 transition-colors" />
