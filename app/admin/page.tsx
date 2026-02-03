@@ -12,7 +12,6 @@ const supabase = createClient(
 
 const CATEGORIES = [
   { slug: 'laptop', name: '노트북' },
-  { slug: 'desktop', name: '데스크탑' },
   { slug: 'monitor', name: '모니터' },
   { slug: 'mouse', name: '마우스' },
   { slug: 'keyboard', name: '키보드' },
