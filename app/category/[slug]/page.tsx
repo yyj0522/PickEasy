@@ -4,7 +4,9 @@ import { useEffect, useState, use } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Loader2, ShoppingBag, Info } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
-import Footer from '@/components/layout/Footer'; 
+import Footer from '@/components/layout/Footer';
+// ⭐ [변경] 새로 만든 쿠팡 전용 배너 파일에서 import
+import { CategoryCoupangBanners } from '@/components/ads/CoupangBanners';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,7 +40,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-12 flex-1 w-full">
+      {/* justify-start 및 min-h-[1000px] 적용 */}
+      <div className="max-w-6xl mx-auto px-4 py-12 flex-1 w-full justify-start min-h-[1000px] relative">
+        
+        {/* ⭐ 쿠팡 전용 배너 컴포넌트 */}
+        <CategoryCoupangBanners />
+
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-2 text-gray-900">{categoryName} 추천 리스트</h1>
           <p className="text-gray-500">엄선된 최신 제품들을 확인하세요.</p>
