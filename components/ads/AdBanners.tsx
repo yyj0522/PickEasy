@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 
-// PC용 좌우 고정 배너 (스크롤 시 푸터 침범 방지 로직 포함)
+// PC용 좌우 고정 배너
 export function DesktopSideBanners() {
-  const [bannerCenter, setBannerCenter] = useState<string | number>('50%');
+  // 초기값을 화면 중앙(50%)이 아니라, 헤더(64px) + 여백(100px) = 164px로 설정
+  const [bannerTop, setBannerTop] = useState<number>(164);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -12,22 +13,26 @@ export function DesktopSideBanners() {
       if (!footer) return;
 
       const footerRect = footer.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
+      
+      const headerHeight = 64; 
+      const topSpacing = 100; // 헤더로부터의 거리
+      const defaultTop = headerHeight + topSpacing; // 기본 위치 (164px)
+      
       const bannerHeight = 600;
-      const bannerHalfHeight = bannerHeight / 2;
       const gap = 50; // 푸터와의 최소 간격
 
-      // 배너의 현재 하단 위치 (뷰포트 기준)
-      const bannerBottomPos = (viewportHeight / 2) + bannerHalfHeight;
+      // 배너의 하단 끝 위치 (뷰포트 기준)
+      const bannerBottomPos = defaultTop + bannerHeight;
+      
       // 한계선 (뷰포트 기준) = 푸터 상단 - 간격
       const limit = footerRect.top - gap;
 
       if (bannerBottomPos > limit) {
-        // 배너가 한계선을 넘으면 위로 밀어올림
-        setBannerCenter(limit - bannerHalfHeight);
+        // 배너가 푸터 영역을 침범하려고 하면, 그만큼 위로 올림
+        setBannerTop(limit - bannerHeight);
       } else {
-        // 평소에는 화면 중앙 고정
-        setBannerCenter('50%');
+        // 평소에는 164px 위치에 고정
+        setBannerTop(defaultTop);
       }
     };
 
@@ -44,9 +49,10 @@ export function DesktopSideBanners() {
   return (
     <>
       {/* ------------------ PC용 좌측 배너 (G마켓) ------------------ */}
+      {/* -translate-y-1/2 제거, top-1/2 제거 */}
       <div 
-        className="fixed -translate-y-1/2 right-1/2 mr-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
-        style={{ top: bannerCenter }}
+        className="fixed right-1/2 mr-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
+        style={{ top: `${bannerTop}px` }}
       >
         <a 
           href="https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=bREd&u_id=" 
@@ -72,8 +78,8 @@ export function DesktopSideBanners() {
 
       {/* ------------------ PC용 우측 배너 (하이마트) ------------------ */}
       <div 
-        className="fixed -translate-y-1/2 left-1/2 ml-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
-        style={{ top: bannerCenter }}
+        className="fixed left-1/2 ml-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
+        style={{ top: `${bannerTop}px` }}
       >
         <a 
           href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=ttdJ&u_id=" 
@@ -100,7 +106,7 @@ export function DesktopSideBanners() {
   );
 }
 
-// 모바일용 하단 배너
+// 모바일용 하단 배너 (변경 없음)
 export function MobileBottomBanner() {
   return (
     <div className="mt-6 w-full flex justify-center min-[1350px]:hidden">

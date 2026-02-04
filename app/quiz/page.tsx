@@ -7,7 +7,6 @@ import { Monitor, Fan, Armchair, ChevronRight, Loader2, Tv, Mouse, Keyboard, Tab
 import Disclaimer from '@/components/common/Disclaimer';
 import BuyButton from '@/components/common/BuyButton';
 import Footer from '@/components/layout/Footer';
-// ⭐ 배너 컴포넌트 임포트
 import { DesktopSideBanners, MobileBottomBanner } from '@/components/ads/AdBanners';
 
 const CATEGORIES = [
@@ -214,10 +213,11 @@ function QuizContent() {
   };
 
   return (
-    // ⭐ min-h-[1000px] 추가하여 컨텐츠 높이 확보 (PC 배너 짤림 방지)
-    <div className="flex-1 flex flex-col justify-center max-w-4xl mx-auto px-4 pt-12 pb-4 md:py-12 w-full relative min-h-[1000px]">
+    // ⭐ 수정됨: justify-center -> justify-start (콘텐츠 상단 시작)
+    // ⭐ min-h-[1000px] 유지 (배너 공간 확보)
+    <div className="flex-1 flex flex-col justify-start max-w-4xl mx-auto px-4 pt-12 pb-4 md:py-12 w-full relative min-h-[1000px]">
       
-      {/* ⭐ PC용 좌우 고정 배너 컴포넌트 */}
+      {/* PC 배너 컴포넌트 */}
       <DesktopSideBanners />
 
       {step === 'category' && (
@@ -356,7 +356,7 @@ function QuizContent() {
         </div>
       )}
 
-      {/* ⭐ 모바일용 하단 배너 컴포넌트 */}
+      {/* 모바일 하단 배너 컴포넌트 */}
       <MobileBottomBanner />
 
     </div>
