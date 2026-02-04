@@ -289,7 +289,7 @@ export default function PCBuilderPage() {
           </div>
         )}
 
-        <div className="w-full mt-auto pt-[150px] mb-[50px] flex justify-center shrink-0">
+        <div className="w-full mt-auto py-8 flex justify-center shrink-0">
           <div className="hidden md:block">
             <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=5I2A&u_id=" rel="noopener noreferrer">
               <img src="https://img.linkprice.com/files/glink/himart/20260129/697b25137c135_728x90.png" width="728" height="90" alt="광고" className="border-0" />
@@ -298,10 +298,16 @@ export default function PCBuilderPage() {
           </div>
 
           <div className="block md:hidden">
-            <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=p4ev&u_id=" rel="noopener noreferrer">
-              <img src="https://img.linkprice.com/files/glink/himart/20260129/697b2513942a2_320x100.png" width="320" height="100" alt="광고" className="border-0 rounded-lg shadow-sm" />
+            <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=TJzp&u_id=" rel="noopener noreferrer">
+              <img 
+                src="https://img.linkprice.com/files/glink/himart/20260129/697b2513716b9_468x60.png" 
+                width="468" 
+                height="60" 
+                alt="광고" 
+                className="border-0 max-w-full h-auto rounded-lg shadow-sm"
+              />
             </a>
-            <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=p4ev&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
+            <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=TJzp&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
           </div>
         </div>
       </div>
