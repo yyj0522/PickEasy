@@ -41,7 +41,8 @@ export default function VSPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-1 max-w-4xl mx-auto px-4 pt-12 w-full">
+      {/* flex flex-col을 추가하여 내부 요소들이 세로로 정렬되고, mt-auto가 작동하도록 함 */}
+      <div className="flex-1 max-w-4xl mx-auto px-4 pt-12 w-full flex flex-col">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
             <Swords className="w-8 h-8 text-red-500" />
@@ -145,7 +146,8 @@ export default function VSPage() {
           </div>
         )}
 
-        <div className="w-full my-8 flex justify-center">
+        {/* 광고 배너 영역: mt-auto로 하단 배치, mt-[150px]로 상단 여백 확보, mb-[50px]로 하단 여백 확보 */}
+        <div className="w-full mt-auto pt-[150px] mb-[50px] flex justify-center shrink-0">
           <div className="hidden md:block">
             <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=Oze4&u_id=" rel="noopener noreferrer">
               <img src="https://img.linkprice.com/files/glink/himart/20250630/686230aa8d3de_728x90.png" width="728" height="90" alt="광고" className="border-0" />
