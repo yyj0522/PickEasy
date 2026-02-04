@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { Calculator, Cpu, Loader2, RotateCcw, MessageSquarePlus, Share2, Download, Check, Copy } from 'lucide-react';
+import { Calculator, Cpu, Loader2, RotateCcw, MessageSquarePlus, Share2, Download } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import Disclaimer from '@/components/common/Disclaimer';
 import BuyButton from '@/components/common/BuyButton';
@@ -132,7 +132,7 @@ export default function PCBuilderPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-1 max-w-3xl mx-auto px-4 py-12 w-full">
+      <div className="flex-1 max-w-3xl mx-auto px-4 pt-12 w-full flex flex-col">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
             <Calculator className="w-8 h-8 text-blue-600" />
@@ -218,7 +218,7 @@ export default function PCBuilderPage() {
                     </div>
                     
                     <div className="mt-3 sm:mt-0">
-                         <BuyButton 
+                          <BuyButton 
                           keyword={part.name} 
                           className="flex items-center justify-center gap-1 bg-gray-900 text-white text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-black transition shadow-sm whitespace-nowrap"
                         />
@@ -288,6 +288,22 @@ export default function PCBuilderPage() {
             )}
           </div>
         )}
+
+        <div className="w-full mt-auto pt-[150px] mb-[50px] flex justify-center shrink-0">
+          <div className="hidden md:block">
+            <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=5I2A&u_id=" rel="noopener noreferrer">
+              <img src="https://img.linkprice.com/files/glink/himart/20260129/697b25137c135_728x90.png" width="728" height="90" alt="광고" className="border-0" />
+            </a>
+            <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=5I2A&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
+          </div>
+
+          <div className="block md:hidden">
+            <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=p4ev&u_id=" rel="noopener noreferrer">
+              <img src="https://img.linkprice.com/files/glink/himart/20260129/697b2513942a2_320x100.png" width="320" height="100" alt="광고" className="border-0 rounded-lg shadow-sm" />
+            </a>
+            <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=p4ev&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
+          </div>
+        </div>
       </div>
 
       <Footer />
