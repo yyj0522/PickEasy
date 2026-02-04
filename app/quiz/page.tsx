@@ -149,6 +149,7 @@ function QuizContent() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentQIdx, setCurrentQIdx] = useState(0);
   const [result, setResult] = useState<any>(null);
+  const [bannerCenter, setBannerCenter] = useState<string | number>('50%'); // 배너 위치 상태
   const searchParams = useSearchParams();
   const directQuery = searchParams.get('q');
 
@@ -158,6 +159,43 @@ function QuizContent() {
       submitDirectSearch(directQuery);
     }
   }, [directQuery]);
+
+  // ⭐ PC 배너 스크롤 로직 (푸터 침범 방지)
+  useEffect(() => {
+    const handleScroll = () => {
+      const footer = document.querySelector('footer');
+      if (!footer) return;
+
+      const footerRect = footer.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const bannerHeight = 600;
+      const bannerHalfHeight = bannerHeight / 2;
+      const gap = 50; // 푸터와의 최소 간격 (50px)
+
+      // 배너의 현재 하단 위치 (뷰포트 기준) = 화면중앙 + 배너절반높이
+      const bannerBottomPos = (viewportHeight / 2) + bannerHalfHeight;
+      // 한계선 (뷰포트 기준) = 푸터 상단 - 간격
+      const limit = footerRect.top - gap;
+
+      if (bannerBottomPos > limit) {
+        // 배너가 한계선을 넘으면 위로 밀어올림
+        // 새로운 중심점 = 한계선 - 배너절반높이
+        setBannerCenter(limit - bannerHalfHeight);
+      } else {
+        // 평소에는 화면 중앙 고정
+        setBannerCenter('50%');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+    handleScroll(); // 초기 실행
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
 
   const handleCategorySelect = (cat: string) => {
     setCategory(cat);
@@ -212,12 +250,14 @@ function QuizContent() {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-center max-w-4xl mx-auto px-4 py-12 w-full relative">
+    // ⭐ 모바일 하단 여백 축소: pt-12 pb-4 (PC는 md:py-12 유지)
+    <div className="flex-1 flex flex-col justify-center max-w-4xl mx-auto px-4 pt-12 pb-4 md:py-12 w-full relative">
       
       {/* ------------------ PC용 좌측 배너 (G마켓) ------------------ */}
-      {/* 화면 중앙(left-1/2)에서 500px만큼 왼쪽으로 이동. 
-          화면 너비가 1350px 이상일 때만 보임 (중앙컨텐츠 + 양쪽배너 + 여백50px 고려) */}
-      <div className="fixed top-1/2 -translate-y-1/2 right-1/2 mr-[500px] hidden min-[1350px]:block z-10">
+      <div 
+        className="fixed -translate-y-1/2 right-1/2 mr-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
+        style={{ top: bannerCenter }} // 동적 위치 적용
+      >
         <a 
           href="https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=bREd&u_id=" 
           target="_blank" 
@@ -241,8 +281,10 @@ function QuizContent() {
       </div>
 
       {/* ------------------ PC용 우측 배너 (하이마트) ------------------ */}
-      {/* 화면 중앙(right-1/2)에서 500px만큼 오른쪽으로 이동. */}
-      <div className="fixed top-1/2 -translate-y-1/2 left-1/2 ml-[500px] hidden min-[1350px]:block z-10">
+      <div 
+        className="fixed -translate-y-1/2 left-1/2 ml-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
+        style={{ top: bannerCenter }} // 동적 위치 적용
+      >
         <a 
           href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=ttdJ&u_id=" 
           target="_blank" 
@@ -402,8 +444,8 @@ function QuizContent() {
       )}
 
       {/* ------------------ 모바일/태블릿용 하단 배너 (하이마트 가로형) ------------------ */}
-      {/* 1350px 미만에서 보임 (PC배너가 사라지는 시점과 연동) */}
-      <div className="mt-12 w-full flex justify-center min-[1350px]:hidden">
+      {/* ⭐ 상단 여백 축소: mt-12 -> mt-6 */}
+      <div className="mt-6 w-full flex justify-center min-[1350px]:hidden">
         <a 
           href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=pzGE&u_id=" 
           target="_blank" 
