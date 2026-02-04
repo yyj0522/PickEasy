@@ -98,7 +98,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 py-8 mb-20 w-full">
+      {/* mb-20 제거하여 배너와의 간격 조절 */}
+      <section className="max-w-6xl mx-auto px-4 py-8 w-full">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">카테고리별 AI 추천</h2>
         <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
           {[
@@ -122,6 +123,49 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* 광고 배너 섹션 (상하 여백 32px = my-8) */}
+      <div className="w-full flex justify-center my-8 px-4">
+        {/* PC 배너 (Lenovo) */}
+        <div className="hidden md:block">
+          <a target="_blank" href="https://click.linkprice.com/click.php?m=lenovo&a=A100702467&l=SwDL&u_id=" rel="noopener noreferrer">
+            <img 
+              src="https://img.linkprice.com/files/glink/lenovo/20250611/8yVzmwPhoeMlf_[크기변환]728x90 (2.jpg" 
+              width="728" 
+              height="90" 
+              alt="Lenovo 광고" 
+              className="border-0"
+            />
+          </a>
+          <img 
+            src="https://track.linkprice.com/lpshow.php?m_id=lenovo&a_id=A100702467&p_id=0000&l_id=SwDL&l_cd1=2&l_cd2=0" 
+            width="1" 
+            height="1" 
+            alt=""
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {/* 모바일 배너 (Hi-Mart) */}
+        <div className="block md:hidden">
+          <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=pzGE&u_id=" rel="noopener noreferrer">
+            <img 
+              src="https://img.linkprice.com/files/glink/himart/20260129/697b259eaf863_320x100.png" 
+              width="320" 
+              height="100" 
+              alt="Hi-Mart 광고" 
+              className="border-0 rounded-lg shadow-sm"
+            />
+          </a>
+          <img 
+            src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=pzGE&l_cd1=2&l_cd2=0" 
+            width="1" 
+            height="1" 
+            alt=""
+            style={{ display: 'none' }}
+          />
+        </div>
+      </div>
 
       <Footer />
 
