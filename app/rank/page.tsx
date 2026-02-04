@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Loader2, TrendingUp, AlertCircle, Mail } from 'lucide-react'; 
 import BuyButton from '@/components/common/BuyButton';
 import Footer from '@/components/layout/Footer';
+import Disclaimer from '@/components/common/Disclaimer';
 import { DesktopSideBanners, MobileBottomBanner } from '@/components/ads/AdBanners';
 
 const supabase = createClient(
@@ -57,10 +58,8 @@ export default function RankPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* ⭐ 수정됨: min-h-[1000px] 추가 (배너 공간 확보 및 푸터 밀어내기) */}
       <div className="max-w-4xl mx-auto px-4 py-12 w-full flex-1 relative min-h-[1000px]">
         
-        {/* PC용 좌우 고정 배너 (AdBanners.tsx의 로직에 따라 헤더 아래 100px 위치에 고정됨) */}
         <DesktopSideBanners />
 
         <div className="text-center mb-8">
@@ -71,7 +70,7 @@ export default function RankPage() {
           <p className="text-gray-500">AI가 빅데이터를 분석하여 선정한 인기 순위입니다.</p>
         </div>
 
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8 flex items-start gap-3">
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-sm text-gray-700">
             <p className="font-bold text-blue-800 mb-1">Beta 서비스 안내</p>
@@ -83,6 +82,10 @@ export default function RankPage() {
               잘못된 정보 제보 및 의견은 <strong>projectc029@gmail.com</strong>으로 보내주세요. 여러분의 제보가 AI를 똑똑하게 만듭니다.
             </p>
           </div>
+        </div>
+
+        <div className="mb-8">
+          <Disclaimer />
         </div>
 
         <div className="flex overflow-x-auto gap-2 pb-4 mb-4 scrollbar-hide">

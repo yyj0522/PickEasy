@@ -1,17 +1,44 @@
-"use client";
-
+import { Metadata } from 'next';
 import { useEffect, useState, use } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Loader2, ShoppingBag, Info } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
-// ⭐ [변경] 새로 만든 쿠팡 전용 배너 파일에서 import
 import { CategoryCoupangBanners } from '@/components/ads/CoupangBanners';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+
+const CATEGORY_MAP: Record<string, string> = {
+  laptop: '노트북',
+  monitor: '모니터',
+  mouse: '마우스',
+  keyboard: '키보드',
+  tablet: '태블릿',
+  cleaner: '청소기',
+  dryer: '드라이기',
+  audio: '음향기기',
+  massage: '안마기',
+  watch: '스마트워치',
+  camera: '카메라',
+  accessory: 'IT소품',
+};
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const categoryName = CATEGORY_MAP[slug] || slug.toUpperCase();
+
+  return {
+    title: `${categoryName} 추천 가이드 및 인기 순위 | PickEasy`,
+    description: `실패 없는 ${categoryName} 쇼핑을 위한 AI 분석 가이드. ${categoryName} 스펙 비교, 최저가 정보, 추천 제품을 확인하세요.`,
+    openGraph: {
+      title: `이달의 ${categoryName} 추천 베스트`,
+      description: '고민은 AI가, 선택은 빠르게. 픽이지에서 최적의 모델을 찾아드립니다.',
+    },
+  };
+}
 
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -40,10 +67,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* justify-start 및 min-h-[1000px] 적용 */}
-      <div className="max-w-6xl mx-auto px-4 py-12 flex-1 w-full justify-start min-h-[1000px] relative">
+      <div className="max-w-6xl mx-auto px-4 py-12 flex-1 w-full flex flex-col justify-start min-h-[1000px] relative">
         
-        {/* ⭐ 쿠팡 전용 배너 컴포넌트 */}
         <CategoryCoupangBanners />
 
         <div className="text-center mb-10">
