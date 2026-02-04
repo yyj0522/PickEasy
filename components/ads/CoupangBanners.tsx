@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 
 export function CategoryCoupangBanners() {
-  // AdBanners.tsx와 동일한 초기 위치 설정 (헤더 64px + 여백 100px = 164px)
+  // 헤더(64px) + 간격(100px) = 164px (AdBanners.tsx와 높이 통일)
   const [bannerTop, setBannerTop] = useState<number>(164);
   const rightBannerRef = useRef<HTMLDivElement>(null);
 
-  // 1. 스크롤 위치 계산 로직 (AdBanners.tsx와 완전히 동일)
+  // 1. 스크롤 위치 계산 로직 (푸터 침범 방지)
   useEffect(() => {
     const handleScroll = () => {
       const footer = document.querySelector('footer');
@@ -17,29 +17,24 @@ export function CategoryCoupangBanners() {
       
       const headerHeight = 64; 
       const topSpacing = 100; // 헤더로부터의 거리
-      const defaultTop = headerHeight + topSpacing; // 기본 위치 (164px)
+      const defaultTop = headerHeight + topSpacing; 
       
       const bannerHeight = 600;
       const gap = 50; // 푸터와의 최소 간격
 
-      // 배너의 하단 끝 위치 (뷰포트 기준)
       const bannerBottomPos = defaultTop + bannerHeight;
-      
-      // 한계선 (뷰포트 기준) = 푸터 상단 - 간격
       const limit = footerRect.top - gap;
 
       if (bannerBottomPos > limit) {
-        // 배너가 푸터 영역을 침범하려고 하면, 그만큼 위로 올림
         setBannerTop(limit - bannerHeight);
       } else {
-        // 평소에는 164px 위치에 고정
         setBannerTop(defaultTop);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleScroll);
-    handleScroll(); // 초기 실행
+    handleScroll();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -47,15 +42,12 @@ export function CategoryCoupangBanners() {
     };
   }, []);
 
-  // 2. 우측 쿠팡 파트너스 스크립트 동적 로드 (기존 유지)
+  // 2. 우측 쿠팡 파트너스 스크립트 동적 로드
   useEffect(() => {
     if (!rightBannerRef.current) return;
-
-    // 중복 로드 방지
     if (rightBannerRef.current.childElementCount > 0) return;
 
     const scriptUrl = "https://ads-partners.coupang.com/g.js";
-    
     const script = document.createElement("script");
     script.src = scriptUrl;
     script.async = true;
@@ -83,8 +75,9 @@ export function CategoryCoupangBanners() {
   return (
     <>
       {/* ------------------ 좌측 배너: 쿠팡 정적 이미지 ------------------ */}
+      {/* ⭐ 수정됨: mr-[600px] (중앙 컨텐츠 6xl 대응), min-[1550px] (화면 너비 확보) */}
       <div 
-        className="fixed right-1/2 mr-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
+        className="fixed right-1/2 mr-[600px] hidden min-[1550px]:block z-10 transition-all duration-75 ease-linear"
         style={{ top: `${bannerTop}px` }}
       >
         <a href="https://link.coupang.com/a/dGidMQ" target="_blank" referrerPolicy="unsafe-url">
@@ -99,12 +92,13 @@ export function CategoryCoupangBanners() {
       </div>
 
       {/* ------------------ 우측 배너: 쿠팡 동적 카루셀 (스크립트) ------------------ */}
+      {/* ⭐ 수정됨: ml-[600px], min-[1550px] */}
       <div 
         ref={rightBannerRef}
-        className="fixed left-1/2 ml-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear bg-white"
+        className="fixed left-1/2 ml-[600px] hidden min-[1550px]:block z-10 transition-all duration-75 ease-linear bg-white"
         style={{ top: `${bannerTop}px`, width: '160px', height: '600px' }}
       >
-        {/* 스크립트가 이곳에 inject 됩니다 */}
+        {/* 스크립트 inject 위치 */}
       </div>
     </>
   );
