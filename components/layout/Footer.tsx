@@ -4,10 +4,7 @@ export default function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-100 py-12">
       <div className="max-w-screen-xl mx-auto px-4">
-        
-        {/* 상단: 브랜드 소개 및 메뉴 링크 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          {/* 브랜드 영역 (넓게 사용) */}
           <div className="md:col-span-2">
             <h3 className="font-bold text-lg mb-3 text-gray-900">PickEasy</h3>
             <p className="text-sm text-gray-500 leading-relaxed break-keep">
@@ -16,7 +13,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* 서비스 메뉴 */}
           <div>
             <h4 className="font-bold text-sm text-gray-900 mb-3">Service</h4>
             <ul className="space-y-2 text-sm text-gray-500">
@@ -27,7 +23,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* 지원 및 정책 */}
           <div>
             <h4 className="font-bold text-sm text-gray-900 mb-3">Support</h4>
             <ul className="space-y-2 text-sm text-gray-500">
@@ -53,7 +48,6 @@ export default function Footer() {
         
         <hr className="border-gray-200 my-8" />
         
-        {/* 하단: 면책 조항 및 카피라이트 */}
         <div className="text-[11px] text-gray-400 space-y-2 leading-relaxed">
           <p className="font-medium text-gray-500">
             ※ 제휴 마케팅 활동 안내
@@ -73,7 +67,6 @@ export default function Footer() {
           
           <div className="pt-4 flex flex-col md:flex-row justify-between items-center gap-2">
             <p>© 2026 PickEasy. All rights reserved.</p>
-            {/* 필요하다면 사업자 정보를 여기에 추가 (개인 운영 시 생략 가능) */}
           </div>
         </div>
       </div>
