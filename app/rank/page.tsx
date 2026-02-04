@@ -5,6 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Loader2, TrendingUp, AlertCircle, Mail } from 'lucide-react'; 
 import BuyButton from '@/components/common/BuyButton';
 import Footer from '@/components/layout/Footer';
+// ⭐ 배너 컴포넌트 임포트
+import { DesktopSideBanners, MobileBottomBanner } from '@/components/ads/AdBanners';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,7 +58,12 @@ export default function RankPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 py-12 w-full flex-1">
+      {/* 컨텐츠 영역: 배너 배치를 위해 relative 추가 */}
+      <div className="max-w-4xl mx-auto px-4 py-12 w-full flex-1 relative">
+        
+        {/* ⭐ PC용 좌우 고정 배너 컴포넌트 */}
+        <DesktopSideBanners />
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold flex items-center justify-center gap-2 mb-3">
             <TrendingUp className="text-blue-600" />
@@ -142,6 +149,10 @@ export default function RankPage() {
             )}
           </div>
         )}
+
+        {/* ⭐ 모바일용 하단 배너 컴포넌트 */}
+        <MobileBottomBanner />
+
       </div>
       <Footer />
     </div>
