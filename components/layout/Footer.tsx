@@ -1,8 +1,6 @@
-// components/layout/Footer.tsx
-
 export default function Footer() {
   return (
-    <footer className="bg-gray-50 border-t border-gray-100 py-12 mt-20">
+    <footer className="bg-gray-50 border-t border-gray-100 py-12">
       <div className="max-w-screen-xl mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <div>
@@ -22,7 +20,6 @@ export default function Footer() {
             이 포스팅은 제휴마케팅이 포함된 광고로 커미션을 지급 받습니다.
           </p>
           
-          {/* ⭐ 면책 조항 */}
           <p>
             ※ 본 사이트에서 제공하는 AI 견적 및 제품 정보는 참고용이며, 제조사의 사정에 따라 스펙이 변경될 수 있습니다.<br/>
             최종 구매 결정 및 호환성 확인에 대한 책임은 구매자 본인에게 있습니다.
