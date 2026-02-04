@@ -41,7 +41,7 @@ export default function VSPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-1 max-w-4xl mx-auto px-4 py-12 w-full">
+      <div className="flex-1 max-w-4xl mx-auto px-4 pt-12 w-full">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
             <Swords className="w-8 h-8 text-red-500" />
@@ -144,6 +144,22 @@ export default function VSPage() {
             </div>
           </div>
         )}
+
+        <div className="w-full my-8 flex justify-center">
+          <div className="hidden md:block">
+            <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=Oze4&u_id=" rel="noopener noreferrer">
+              <img src="https://img.linkprice.com/files/glink/himart/20250630/686230aa8d3de_728x90.png" width="728" height="90" alt="광고" className="border-0" />
+            </a>
+            <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=Oze4&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
+          </div>
+
+          <div className="block md:hidden">
+            <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=x00q&u_id=" rel="noopener noreferrer">
+              <img src="https://img.linkprice.com/files/glink/himart/20250630/686230aa8c2e4_320x100.png" width="320" height="100" alt="광고" className="border-0 rounded-lg shadow-sm" />
+            </a>
+            <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=x00q&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
+          </div>
+        </div>
       </div>
 
       <Footer />
