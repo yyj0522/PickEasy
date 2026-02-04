@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 
 export function CategoryCoupangBanners() {
-  // 헤더(64px) + 간격(100px) = 164px
+  // AdBanners.tsx와 동일한 초기 위치 설정 (헤더 64px + 여백 100px = 164px)
   const [bannerTop, setBannerTop] = useState<number>(164);
   const rightBannerRef = useRef<HTMLDivElement>(null);
 
-  // 1. 스크롤 위치 계산 로직 (푸터 침범 방지)
+  // 1. 스크롤 위치 계산 로직 (AdBanners.tsx와 완전히 동일)
   useEffect(() => {
     const handleScroll = () => {
       const footer = document.querySelector('footer');
@@ -17,7 +17,7 @@ export function CategoryCoupangBanners() {
       
       const headerHeight = 64; 
       const topSpacing = 100; // 헤더로부터의 거리
-      const defaultTop = headerHeight + topSpacing; 
+      const defaultTop = headerHeight + topSpacing; // 기본 위치 (164px)
       
       const bannerHeight = 600;
       const gap = 50; // 푸터와의 최소 간격
@@ -32,7 +32,7 @@ export function CategoryCoupangBanners() {
         // 배너가 푸터 영역을 침범하려고 하면, 그만큼 위로 올림
         setBannerTop(limit - bannerHeight);
       } else {
-        // 평소에는 지정된 위치에 고정
+        // 평소에는 164px 위치에 고정
         setBannerTop(defaultTop);
       }
     };
@@ -47,11 +47,11 @@ export function CategoryCoupangBanners() {
     };
   }, []);
 
-  // 2. 우측 쿠팡 파트너스 스크립트 동적 로드
+  // 2. 우측 쿠팡 파트너스 스크립트 동적 로드 (기존 유지)
   useEffect(() => {
     if (!rightBannerRef.current) return;
 
-    // 중복 로드 방지 (이미 스크립트가 들어가 있으면 실행 X)
+    // 중복 로드 방지
     if (rightBannerRef.current.childElementCount > 0) return;
 
     const scriptUrl = "https://ads-partners.coupang.com/g.js";
