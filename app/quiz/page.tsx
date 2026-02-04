@@ -212,7 +212,58 @@ function QuizContent() {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-center max-w-4xl mx-auto px-4 py-12 w-full">
+    <div className="flex-1 flex flex-col justify-center max-w-4xl mx-auto px-4 py-12 w-full relative">
+      
+      {/* ------------------ PC용 좌측 배너 (G마켓) ------------------ */}
+      {/* 화면 중앙(left-1/2)에서 500px만큼 왼쪽으로 이동. 
+          화면 너비가 1350px 이상일 때만 보임 (중앙컨텐츠 + 양쪽배너 + 여백50px 고려) */}
+      <div className="fixed top-1/2 -translate-y-1/2 right-1/2 mr-[500px] hidden min-[1350px]:block z-10">
+        <a 
+          href="https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=bREd&u_id=" 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          <img 
+            src="https://img.linkprice.com/files/glink/gmarket/20221004/KW0dOfhjl1900_160x600.jpg" 
+            width="160" 
+            height="600" 
+            alt="G마켓 광고" 
+            className="border-0"
+          />
+        </a>
+        <img 
+          src="https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=bREd&l_cd1=2&l_cd2=0" 
+          width="1" 
+          height="1" 
+          alt=""
+          style={{ display: 'none' }}
+        />
+      </div>
+
+      {/* ------------------ PC용 우측 배너 (하이마트) ------------------ */}
+      {/* 화면 중앙(right-1/2)에서 500px만큼 오른쪽으로 이동. */}
+      <div className="fixed top-1/2 -translate-y-1/2 left-1/2 ml-[500px] hidden min-[1350px]:block z-10">
+        <a 
+          href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=ttdJ&u_id=" 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          <img 
+            src="https://img.linkprice.com/files/glink/himart/20260129/697b259ee19a1_160x600.png" 
+            width="160" 
+            height="600" 
+            alt="하이마트 광고" 
+            className="border-0"
+          />
+        </a>
+        <img 
+          src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=ttdJ&l_cd1=2&l_cd2=0" 
+          width="1" 
+          height="1" 
+          alt=""
+          style={{ display: 'none' }}
+        />
+      </div>
       
       {step === 'category' && (
         <div className="space-y-8 animate-fade-in">
@@ -349,6 +400,32 @@ function QuizContent() {
           </button>
         </div>
       )}
+
+      {/* ------------------ 모바일/태블릿용 하단 배너 (하이마트 가로형) ------------------ */}
+      {/* 1350px 미만에서 보임 (PC배너가 사라지는 시점과 연동) */}
+      <div className="mt-12 w-full flex justify-center min-[1350px]:hidden">
+        <a 
+          href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=pzGE&u_id=" 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          <img 
+            src="https://img.linkprice.com/files/glink/himart/20260129/697b259eaf863_320x100.png" 
+            width="320" 
+            height="100" 
+            alt="하이마트 모바일 광고" 
+            className="border-0 max-w-full h-auto rounded-lg shadow-sm"
+          />
+        </a>
+        <img 
+          src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=pzGE&l_cd1=2&l_cd2=0" 
+          width="1" 
+          height="1" 
+          alt=""
+          style={{ display: 'none' }}
+        />
+      </div>
+
     </div>
   );
 }
