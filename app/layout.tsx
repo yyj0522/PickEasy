@@ -50,10 +50,10 @@ export const metadata: Metadata = {
     siteName: 'PickEasy',
     images: [
       {
-        url: '/logo.png',
-        width: 800,
-        height: 600,
-        alt: 'PickEasy Logo',
+        url: '/og-image.png',
+        width: 1120,
+        height: 630,
+        alt: 'PickEasy 서비스 미리보기',
       },
     ],
   },
