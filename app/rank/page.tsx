@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Loader2, TrendingUp, AlertCircle, Mail, ChevronDown, ChevronUp, Search } from 'lucide-react'; 
+import { Loader2, TrendingUp, AlertCircle, Mail, ChevronDown, ChevronUp, Search, ExternalLink } from 'lucide-react'; 
+import Link from 'next/link';
 import Footer from '@/components/layout/Footer';
 import Disclaimer from '@/components/common/Disclaimer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';
+import TermHighlighter from '@/components/common/TermHighlighter';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -239,7 +241,9 @@ export default function RankPage() {
                           <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold w-fit mx-auto md:mx-0 shrink-0">NEW</span>
                         )}
                       </div>
-                      <p className="text-sm text-slate-500 mb-2 line-clamp-1">{item.summary}</p>
+                      <p className="text-sm text-slate-500 mb-2 line-clamp-1">
+                        <TermHighlighter text={item.summary} />
+                      </p>
                       <div className="text-base font-bold text-blue-600">
                         {typeof item.price_estimate === 'number' ? item.price_estimate.toLocaleString() : item.price_estimate}원~
                       </div>
@@ -256,19 +260,35 @@ export default function RankPage() {
                         
                         <div className="mb-6 space-y-4">
                           <div className="bg-white p-4 rounded-xl border border-slate-200">
-                            <h4 className="font-bold text-sm text-slate-900 mb-2">📋 상세 스펙</h4>
-                            <p className="text-sm text-slate-600 leading-relaxed">{item.spec_detail}</p>
+                            <h4 className="font-bold text-sm text-slate-900 mb-2">상세 스펙</h4>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                                <TermHighlighter text={item.spec_detail} />
+                            </p>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                              <h4 className="font-bold text-sm text-blue-800 mb-1">👍 장점</h4>
-                              <p className="text-sm text-blue-700">{item.pros}</p>
+                              <h4 className="font-bold text-sm text-blue-800 mb-1">장점</h4>
+                              <p className="text-sm text-blue-700">
+                                <TermHighlighter text={item.pros} />
+                              </p>
                             </div>
                             <div className="bg-red-50 p-4 rounded-xl border border-red-100">
-                              <h4 className="font-bold text-sm text-red-800 mb-1">👎 단점</h4>
-                              <p className="text-sm text-red-700">{item.cons}</p>
+                              <h4 className="font-bold text-sm text-red-800 mb-1">단점</h4>
+                              <p className="text-sm text-red-700">
+                                <TermHighlighter text={item.cons} />
+                              </p>
                             </div>
                           </div>
+                        </div>
+
+                        <div className="mb-6 flex justify-center">
+                          <Link 
+                            href={`/product/${encodeURIComponent(item.name)}`}
+                            className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors w-full md:w-auto text-center flex items-center justify-center gap-2 shadow-lg"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            전문가 상세 분석 & 리뷰 보기
+                          </Link>
                         </div>
 
                         <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-center">
