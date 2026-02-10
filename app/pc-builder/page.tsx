@@ -92,6 +92,8 @@ export default function PCBuilderPage() {
   const resultRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [currentDateStr, setCurrentDateStr] = useState('');
+
   const [input, setInput] = useState({
     budget: '',
     usage: '',
@@ -101,6 +103,9 @@ export default function PCBuilderPage() {
   useEffect(() => {
     setRandomDesktop(DESKTOP_BANNERS[Math.floor(Math.random() * DESKTOP_BANNERS.length)]);
     setRandomMobile(MOBILE_BANNERS[Math.floor(Math.random() * MOBILE_BANNERS.length)]);
+
+    const now = new Date();
+    setCurrentDateStr(`${now.getFullYear()}년 ${now.getMonth() + 1}월`);
   }, []);
 
   const handleSubmit = async () => {
@@ -221,10 +226,11 @@ export default function PCBuilderPage() {
 
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black mb-3 flex items-center justify-center gap-2 text-slate-900">
+            <Calculator className="w-8 h-8 text-indigo-600" />
             AI 조립 PC 견적
           </h1>
           <p className="text-slate-500 font-medium">
-            2026년 최신 가격 반영! 용도와 예산만 알려주세요.<br/>
+            {currentDateStr ? `${currentDateStr} 최신 가격 반영!` : '실시간 가격 반영!'} 용도와 예산만 알려주세요.<br/>
             AI가 실시간으로 부품을 조합해드립니다.
           </p>
         </div>
@@ -336,7 +342,7 @@ export default function PCBuilderPage() {
               )}
 
               <div className="p-4 bg-slate-100 text-center text-[10px] text-slate-400 border-t border-slate-200 font-medium">
-                  * 가격은 2026년 2월 기준 국내 주요 온라인 마켓 및 검색 포털 평균가이며, 실시간 변동될 수 있습니다.
+                  * 가격은 {currentDateStr} 기준 국내 주요 온라인 마켓 및 검색 포털 평균가이며, 실시간 변동될 수 있습니다.
               </div>
             </div>
 
