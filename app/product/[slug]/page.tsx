@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation'; // [중요] useParams 추가
 import Footer from '@/components/layout/Footer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';
 import TermHighlighter from '@/components/common/TermHighlighter';
@@ -93,24 +94,31 @@ const BOTTOM_GRID_BANNERS = [
   { href: 'https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=Cq7c&u_id=', imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20240328/600GgnC4eLAW0_120_60.png', alt: '알리익스프레스' }
 ];
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
+// props 대신 useParams 사용을 위해 타입 제거
+export default function ProductDetailPage() {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [randomDesktop, setRandomDesktop] = useState<Banner | null>(null);
   const [randomMobile, setRandomMobile] = useState<Banner | null>(null);
   
-  const productName = decodeURIComponent(params.slug);
+  // [핵심 수정] params props 대신 useParams 훅 사용
+  const params = useParams();
+  const slug = params?.slug as string; 
+  const productName = slug ? decodeURIComponent(slug) : '';
 
   useEffect(() => {
     setRandomDesktop(DESKTOP_BANNERS[Math.floor(Math.random() * DESKTOP_BANNERS.length)]);
     setRandomMobile(MOBILE_BANNERS[Math.floor(Math.random() * MOBILE_BANNERS.length)]);
 
     async function fetchProductData() {
+      // slug가 없으면 실행하지 않음
+      if (!productName) return;
+
       setLoading(true);
       
       const { data } = await supabase
         .from('rankings')
-        .select('data, category')
+        .select('data, category') 
         .order('created_at', { ascending: false });
 
       if (data) {
@@ -121,6 +129,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
           if (!categoryData.data?.list) continue;
           
           const found = categoryData.data.list.find((item: any) => 
+            // 이름 비교 (공백 제거)
             item.name.trim() === productName.trim()
           );
           
@@ -150,7 +159,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
       <div className="min-h-screen flex flex-col justify-center items-center p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">제품을 찾을 수 없습니다.</h2>
         <p className="text-slate-500 mb-6">
-            요청하신 제품명: <span className="font-bold text-black">{productName}</span><br/>
+            요청하신 제품명: <span className="font-bold text-black">{productName || '알 수 없음'}</span><br/>
             순위 변동으로 인해 삭제되었거나 주소가 잘못되었습니다.
         </p>
         <Link href="/rank" className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold">랭킹 보러가기</Link>
