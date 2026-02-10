@@ -54,7 +54,7 @@ export default function Footer() {
           </p>
           <p>
             픽이지는 쿠팡 파트너스 및 링크프라이스 활동을 통해 일정액의 수수료를 제공받을 수 있습니다.<br/>
-            이 포스팅은 제휴마케팅이 포함된 광고로 커미션을 지급 받습니다.
+            이 사이트는 제휴마케팅이 포함되어 있으며 커미션을 지급 받습니다.
           </p>
           
           <p className="mt-2 font-medium text-gray-500">

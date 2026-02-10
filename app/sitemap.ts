@@ -19,7 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const categories = [
     'laptop', 'desktop', 'monitor', 'mouse', 'keyboard', 'tablet',
     'cleaner', 'dryer', 'audio', 'massage', 'watch', 'camera',
-    'accessory' // ⭐ 알리익스프레스 소모품 카테고리 추가
+    'accessory' 
   ].map((slug) => ({
     url: `${baseUrl}/category/${slug}`,
     lastModified: new Date(),

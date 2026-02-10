@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-// PC용 좌우 고정 배너
 export function DesktopSideBanners() {
-  // 초기값을 화면 중앙(50%)이 아니라, 헤더(64px) + 여백(100px) = 164px로 설정
   const [bannerTop, setBannerTop] = useState<number>(164);
 
   useEffect(() => {
@@ -13,32 +11,24 @@ export function DesktopSideBanners() {
       if (!footer) return;
 
       const footerRect = footer.getBoundingClientRect();
-      
       const headerHeight = 64; 
-      const topSpacing = 100; // 헤더로부터의 거리
-      const defaultTop = headerHeight + topSpacing; // 기본 위치 (164px)
-      
+      const topSpacing = 100; 
+      const defaultTop = headerHeight + topSpacing;
       const bannerHeight = 600;
-      const gap = 50; // 푸터와의 최소 간격
-
-      // 배너의 하단 끝 위치 (뷰포트 기준)
+      const gap = 50; 
       const bannerBottomPos = defaultTop + bannerHeight;
-      
-      // 한계선 (뷰포트 기준) = 푸터 상단 - 간격
       const limit = footerRect.top - gap;
 
       if (bannerBottomPos > limit) {
-        // 배너가 푸터 영역을 침범하려고 하면, 그만큼 위로 올림
         setBannerTop(limit - bannerHeight);
       } else {
-        // 평소에는 164px 위치에 고정
         setBannerTop(defaultTop);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleScroll);
-    handleScroll(); // 초기 실행
+    handleScroll();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -48,8 +38,6 @@ export function DesktopSideBanners() {
 
   return (
     <>
-      {/* ------------------ PC용 좌측 배너 (G마켓) ------------------ */}
-      {/* -translate-y-1/2 제거, top-1/2 제거 */}
       <div 
         className="fixed right-1/2 mr-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
         style={{ top: `${bannerTop}px` }}
@@ -75,8 +63,6 @@ export function DesktopSideBanners() {
           style={{ display: 'none' }}
         />
       </div>
-
-      {/* ------------------ PC용 우측 배너 (하이마트) ------------------ */}
       <div 
         className="fixed left-1/2 ml-[500px] hidden min-[1350px]:block z-10 transition-all duration-75 ease-linear"
         style={{ top: `${bannerTop}px` }}
@@ -106,7 +92,6 @@ export function DesktopSideBanners() {
   );
 }
 
-// 모바일용 하단 배너 (변경 없음)
 export function MobileBottomBanner() {
   return (
     <div className="mt-6 w-full flex justify-center min-[1350px]:hidden">

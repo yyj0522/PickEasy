@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Loader2, TrendingUp, AlertCircle, Mail } from 'lucide-react'; 
-import BuyButton from '@/components/common/BuyButton';
+import { Loader2, TrendingUp, AlertCircle, Mail, ChevronDown, ChevronUp, Search } from 'lucide-react'; 
 import Footer from '@/components/layout/Footer';
 import Disclaimer from '@/components/common/Disclaimer';
 import { DesktopSideBanners, MobileBottomBanner } from '@/components/ads/AdBanners';
@@ -15,17 +14,25 @@ const supabase = createClient(
 
 const TABS = [
   { slug: 'laptop', name: '노트북' },
+  { slug: 'desktop', name: '데스크탑' },
   { slug: 'monitor', name: '모니터' },
+  { slug: 'tablet', name: '태블릿' },
   { slug: 'mouse', name: '마우스' },
   { slug: 'keyboard', name: '키보드' },
-  { slug: 'tablet', name: '태블릿' },
-  { slug: 'cleaner', name: '청소기' },
-  { slug: 'dryer', name: '드라이기' },
-  { slug: 'audio', name: '음향기기' },
-  { slug: 'massage', name: '안마기' },
   { slug: 'watch', name: '워치' },
+  { slug: 'audio', name: '음향기기' },
+  { slug: 'speaker', name: '스피커' },
   { slug: 'camera', name: '카메라' },
-  { slug: 'accessory', name: 'IT소품/잡화' },
+  { slug: 'tv', name: 'TV' },
+  { slug: 'refrigerator', name: '냉장고' },
+  { slug: 'washer', name: '세탁기' },
+  { slug: 'clothes_dryer', name: '건조기' },
+  { slug: 'air_conditioner', name: '에어컨' },
+  { slug: 'air_purifier', name: '공기청정기' },
+  { slug: 'cleaner', name: '청소기' },
+  { slug: 'hair_dryer', name: '헤어드라이기' },
+  { slug: 'massage', name: '안마기' },
+  { slug: 'accessory', name: 'IT잡화' }
 ];
 
 export default function RankPage() {
@@ -33,9 +40,11 @@ export default function RankPage() {
   const [rankings, setRankings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updateDate, setUpdateDate] = useState('');
+  const [expandedId, setExpandedId] = useState<number | null>(null); // 펼쳐보기 상태
 
   useEffect(() => {
     fetchRankings(activeTab);
+    setExpandedId(null);
   }, [activeTab]);
 
   const fetchRankings = async (category: string) => {
@@ -56,30 +65,36 @@ export default function RankPage() {
     setLoading(false);
   };
 
+  const toggleExpand = (idx: number) => {
+    setExpandedId(expandedId === idx ? null : idx);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-12 w-full flex-1 relative min-h-[1000px]">
         
         <DesktopSideBanners />
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold flex items-center justify-center gap-2 mb-3">
-            <TrendingUp className="text-blue-600" />
-            이달의 IT 트렌드 랭킹
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-black flex items-center justify-center gap-2 mb-3 text-slate-900">
+            <TrendingUp className="text-blue-600 w-8 h-8" />
+            이달의 트렌드 랭킹
           </h1>
-          <p className="text-gray-500">AI가 빅데이터를 분석하여 선정한 인기 순위입니다.</p>
+          <p className="text-slate-500 font-medium">
+            AI가 빅데이터를 분석하여 선정한 카테고리별 인기 순위입니다.
+          </p>
         </div>
 
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-          <div className="text-sm text-gray-700">
-            <p className="font-bold text-blue-800 mb-1">Beta 서비스 안내</p>
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-8 flex items-start gap-4 shadow-sm">
+          <AlertCircle className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+          <div className="text-sm text-slate-700">
+            <p className="font-bold text-blue-800 mb-1 text-base">Beta 서비스 안내</p>
             <p className="leading-relaxed mb-2">
-              본 랭킹은 AI가 분석한 트렌드 지표로, 실제 판매량과 차이가 있을 수 있으며 일부 부정확한 정보가 포함될 수 있습니다.
+              본 랭킹은 AI가 다나와, 오픈마켓 등의 데이터를 종합 분석한 결과로, 실제 판매량과 다를 수 있습니다.
             </p>
-            <p className="flex items-center gap-1 text-gray-500 text-xs">
+            <p className="flex items-center gap-1 text-slate-500 text-xs">
               <Mail className="w-3 h-3" />
-              잘못된 정보 제보 및 의견은 <strong>projectc029@gmail.com</strong>으로 보내주세요. 여러분의 제보가 AI를 똑똑하게 만듭니다.
+              오류 제보: <strong>projectc029@gmail.com</strong>
             </p>
           </div>
         </div>
@@ -88,15 +103,16 @@ export default function RankPage() {
           <Disclaimer />
         </div>
 
-        <div className="flex overflow-x-auto gap-2 pb-4 mb-4 scrollbar-hide">
+        {/* 탭 메뉴 */}
+        <div className="flex overflow-x-auto gap-2 pb-4 mb-6 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {TABS.map((tab) => (
             <button
               key={tab.slug}
               onClick={() => setActiveTab(tab.slug)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${
+              className={`px-5 py-2.5 rounded-full whitespace-nowrap text-sm font-bold transition-all ${
                 activeTab === tab.slug 
-                  ? 'bg-black text-white shadow-md' 
-                  : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-100'
+                  ? 'bg-slate-900 text-white shadow-md transform scale-105' 
+                  : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               {tab.name}
@@ -105,47 +121,126 @@ export default function RankPage() {
         </div>
         
         {loading ? (
-          <div className="py-20 text-center text-gray-400 flex flex-col items-center">
-            <Loader2 className="w-8 h-8 animate-spin mb-2" />
-            <p>데이터를 불러오는 중입니다...</p>
+          <div className="py-32 text-center flex flex-col items-center">
+            <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
+            <p className="text-slate-500 font-medium">최신 트렌드를 불러오는 중입니다...</p>
           </div>
         ) : (
-          <div className="space-y-4 animate-fade-in">
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {updateDate && (
-              <div className="text-right text-xs text-gray-400 mb-2">
-                기준: {updateDate}
+              <div className="flex justify-end items-center gap-2 text-xs text-slate-400 mb-2 font-medium">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                업데이트: {updateDate}
               </div>
             )}
 
             {rankings.length === 0 ? (
-              <div className="py-20 text-center text-gray-400 bg-white rounded-2xl border">
+              <div className="py-20 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100">
                 아직 집계된 데이터가 없습니다.
               </div>
             ) : (
               rankings.map((item, idx) => (
-                <div key={idx} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-5 hover:shadow-md transition group">
-                  <div className={`text-2xl font-bold w-12 h-12 flex items-center justify-center rounded-xl shrink-0 ${idx < 3 ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-400'}`}>
-                    {item.rank}
-                  </div>
+                <div key={idx} className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${expandedId === idx ? 'border-blue-500 ring-1 ring-blue-500 shadow-lg' : 'border-slate-200 hover:border-blue-300 hover:shadow-md'}`}>
                   
-                  <div className="flex-1 text-center md:text-left w-full min-w-0">
-                    <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1 justify-center md:justify-start">
-                      <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition truncate">
-                        {item.name}
-                      </h3>
-                      {item.change === 'NEW' && (
-                        <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold w-fit mx-auto md:mx-0 shrink-0">NEW</span>
-                      )}
+                  {/* 요약 정보 (항상 보임) */}
+                  <div 
+                    className="p-5 flex flex-col md:flex-row items-center gap-5 cursor-pointer"
+                    onClick={() => toggleExpand(idx)}
+                  >
+                    <div className={`text-2xl font-black w-14 h-14 flex items-center justify-center rounded-2xl shrink-0 shadow-sm ${idx < 3 ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                      {item.rank}
                     </div>
-                    <p className="text-sm text-gray-500 mb-2 line-clamp-1">{item.reason}</p>
-                    <div className="text-sm font-bold text-gray-900">
-                      예상가: {typeof item.price_estimate === 'number' ? item.price_estimate.toLocaleString() : item.price_estimate}원
+                    
+                    <div className="flex-1 text-center md:text-left w-full min-w-0">
+                      <div className="flex flex-col md:flex-row md:items-center gap-2 mb-1.5 justify-center md:justify-start">
+                        <h3 className="font-bold text-lg text-slate-900 truncate">
+                          {item.name}
+                        </h3>
+                        {item.change === 'NEW' && (
+                          <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold w-fit mx-auto md:mx-0 shrink-0">NEW</span>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-500 mb-2 line-clamp-1">{item.summary}</p>
+                      <div className="text-base font-bold text-blue-600">
+                        {typeof item.price_estimate === 'number' ? item.price_estimate.toLocaleString() : item.price_estimate}원~
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 text-slate-400">
+                      {expandedId === idx ? <ChevronUp /> : <ChevronDown />}
                     </div>
                   </div>
 
-                  <div className="w-full md:w-auto shrink-0 mt-2 md:mt-0">
-                    <BuyButton keyword={item.name} className="w-full md:w-auto" />
+                  {/* 상세 정보 (펼쳐졌을 때만 보임) */}
+                  <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${expandedId === idx ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                    <div className="overflow-hidden">
+                      <div className="p-6 border-t border-slate-100 bg-slate-50/50">
+                        
+                        {/* 상세 스펙 */}
+                        <div className="mb-6 space-y-4">
+                          <div className="bg-white p-4 rounded-xl border border-slate-200">
+                            <h4 className="font-bold text-sm text-slate-900 mb-2">📋 상세 스펙</h4>
+                            <p className="text-sm text-slate-600 leading-relaxed">{item.spec_detail}</p>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                              <h4 className="font-bold text-sm text-blue-800 mb-1">👍 장점</h4>
+                              <p className="text-sm text-blue-700">{item.pros}</p>
+                            </div>
+                            <div className="bg-red-50 p-4 rounded-xl border border-red-100">
+                              <h4 className="font-bold text-sm text-red-800 mb-1">👎 단점</h4>
+                              <p className="text-sm text-red-700">{item.cons}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* ⭐ 최저가 비교 배너 (120x60 3개) */}
+                        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-center">
+                          <h4 className="font-bold text-slate-800 mb-1 flex items-center justify-center gap-2">
+                            <Search className="w-4 h-4 text-blue-600" />
+                            이 제품 최저가 찾아보기
+                          </h4>
+                          <p className="text-xs text-slate-400 mb-4">
+                            아래 쇼핑몰에서 실시간 가격을 확인하세요.
+                          </p>
+                          
+                          <div className="flex flex-wrap justify-center items-center gap-4">
+                            {/* 하이마트 */}
+                            <div className="hover:opacity-80 transition-opacity">
+                              <a target="_blank" href="https://click.linkprice.com/click.php?m=himart&a=A100702467&l=nyIP&u_id=" rel="noopener noreferrer nofollow">
+                                <img src="https://img.linkprice.com/files/glink/himart/20260129/697b25135c355_120x60.png" width="120" height="60" alt="하이마트" style={{ border: 0 }} />
+                              </a>
+                              <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=nyIP&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
+                            </div>
+
+                            {/* G마켓 */}
+                            <div className="hover:opacity-80 transition-opacity">
+                              <a target="_blank" href="https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=1638&u_id=" rel="noopener noreferrer nofollow">
+                                <img src="https://img.linkprice.com/files/glink/gmarket/20191120/5dd48d65a8c5e_120_60.jpg" width="120" height="60" alt="G마켓" style={{ border: 0 }} />
+                              </a>
+                              <img src="https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=1638&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
+                            </div>
+
+                            {/* 쿠팡 */}
+                            <div className="hover:opacity-80 transition-opacity">
+                              <a href="https://link.coupang.com/a/dJuj4r" target="_blank" rel="noopener noreferrer nofollow">
+                                <img src="https://ads-partners.coupang.com/banners/964225?subId=&traceId=V0-301-5f9bd61900e673c0-I964225&w=120&h=60" alt="쿠팡" width="120" height="60" />
+                              </a>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 pt-3 border-t border-slate-100">
+                             <p className="text-[10px] text-slate-400 font-medium">
+                               이 포스팅은 쿠팡 파트너스 및 제휴 마케팅 활동의 일환으로,<br/>
+                               이에 따른 일정액의 수수료를 제공받습니다.
+                             </p>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
                   </div>
+
                 </div>
               ))
             )}

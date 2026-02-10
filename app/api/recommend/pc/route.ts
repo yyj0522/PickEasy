@@ -1,74 +1,79 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import { checkRateLimit } from '@/app/lib/rate-limit'; 
+import { model, cleanGeminiJson } from '@/lib/gemini';
+import { checkRateLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
-import { searchWeb } from '@/app/lib/search'; // ⭐
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: Request) {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown"; 
-  if (!checkRateLimit(ip)) return NextResponse.json({ error: "요청 과다" }, { status: 429 });
+  
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: "요청이 너무 많습니다." }, { status: 429 });
+  }
 
   try {
     const body = await req.json();
     const { category, query, type, budget, usage, previousResult, refinementRequest } = body;
+    const now = new Date();
+    const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
 
-    if ((query && query.trim().length < 2) || (usage && usage.trim().length < 2)) {
-      return NextResponse.json({ error: "내용을 더 자세히 적어주세요." }, { status: 400 });
+    let userPrompt = "";
+
+    if (type === 'initial') {
+      userPrompt = `사용자 요청: 예산 ${budget}만원대로 ${usage} 용도의 조립 PC 견적을 짜줘.`;
+    } else if (type === 'refine') {
+      userPrompt = `기존 견적: ${JSON.stringify(previousResult)}\n수정 요청: ${refinementRequest}`;
+    } else if (query) {
+      userPrompt = `사용자 질문: ${query}`;
+    } else if (category) {
+      userPrompt = `카테고리: ${category} 추천`;
+    } else {
+      return NextResponse.json({ error: "입력 내용이 부족합니다." }, { status: 400 });
     }
 
-    // 1. 검색 쿼리 생성
-    let searchQuery = "";
-    if (type === 'initial') searchQuery = `${budget} ${usage} 조립컴퓨터 견적 추천 2026년`;
-    else if (type === 'refine') searchQuery = `${refinementRequest} 관련 PC 부품 추천`;
-    else if (query) searchQuery = `${query} 추천 가격`;
-    else if (category) searchQuery = `2026년 ${category} 추천 가성비`;
-    
-    if (searchQuery.includes('드라이기')) searchQuery += " 헤어드라이기 -의류 -건조기";
-
-    // 2. 검색 수행
-    const searchContext = await searchWeb(searchQuery);
-
     const systemPrompt = `
-      당신은 IT 전문가입니다.
-      아래 **[실시간 웹 검색 결과]**를 바탕으로 답변하세요. 상상하지 말고 검색된 정보를 참고하세요.
-      
-      ${searchContext}
-      
-      [규칙]
-      1. '드라이기'는 **헤어드라이기**입니다.
-      2. 검색 결과에 없는 가짜 제품을 만들지 마세요.
-      3. 관련 없는 질문은 거절하세요.
+      당신은 **${today}** 기준 최신 IT 하드웨어 견적 전문가입니다.
+      Google 검색 도구를 사용하여 **${today} 현재** 판매 중인 부품의 가격과 성능 정보를 바탕으로 답변하세요.
 
-      [출력 - JSON Only]
-      (기존 포맷 유지)
+      [방어 기제]
+      1. IT 관련이 아니면 다음 JSON만 반환: { "error": "IT_IRRELEVANT", "message": "죄송합니다. 저는 IT 제품 추천만 가능합니다." }
+      
+      [필수 규칙]
+      1. **잡담 금지:** 인사말, 설명, 마크다운 헤더(##) 등을 일체 쓰지 마세요.
+      2. **오직 순수한 JSON 데이터만 출력하세요.**
+      3. 부품명은 풀네임, 가격은 숫자(KRW)로.
+
+      [출력 형식 - JSON]
+      {
+        "intro": "...",
+        "parts": [ 
+          { "part": "CPU", "name": "...", "price": 0, "reason": "..." }
+        ],
+        "total_price_estimate": 1500000,
+        "review": "..."
+      }
     `;
+
+    const result = await model.generateContent(`${systemPrompt}\n\n${userPrompt}`);
+    const responseText = result.response.text();
+    const jsonString = cleanGeminiJson(responseText); 
     
-    // (기존 userContent 로직 유지)
-    let userContent = "";
-    if (type === 'initial') userContent = `예산:${budget}, 용도:${usage}`;
-    else if (type === 'refine') userContent = `기존:${JSON.stringify(previousResult)}, 수정:${refinementRequest}`;
-    else if (query) userContent = query;
-    else userContent = `카테고리:${category}`;
+    let data;
+    try {
+      data = JSON.parse(jsonString);
+    } catch (e) {
+      console.error("JSON Parsing Failed. Raw text:", responseText);
+      throw new Error("AI 응답을 분석하는 데 실패했습니다.");
+    }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userContent }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.3, 
-    });
+    if (data.error === "IT_IRRELEVANT") {
+      return NextResponse.json({ error: data.message }, { status: 400 });
+    }
 
-    const result = JSON.parse(completion.choices[0].message.content || "{}");
-    if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json(data);
 
-    return NextResponse.json(result);
-
-  } catch (error: any) {
-    return NextResponse.json({ error: 'AI Error' }, { status: 500 });
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    return NextResponse.json({ error: "견적 생성 중 오류가 발생했습니다." }, { status: 500 });
   }
 }

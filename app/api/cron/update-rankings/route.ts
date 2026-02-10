@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { model, cleanGeminiJson } from '@/lib/gemini';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,132 +9,91 @@ const supabase = createClient(
 
 const CATEGORIES = [
   { slug: 'laptop', name: '노트북' },
+  { slug: 'desktop', name: '데스크탑' },
   { slug: 'monitor', name: '모니터' },
+  { slug: 'tablet', name: '태블릿' },
   { slug: 'mouse', name: '마우스' },
   { slug: 'keyboard', name: '키보드' },
-  { slug: 'tablet', name: '태블릿' },
-  { slug: 'cleaner', name: '청소기' },
-  { slug: 'dryer', name: '드라이기' },
+  { slug: 'watch', name: '스마트워치' },
   { slug: 'audio', name: '음향기기' },
-  { slug: 'massage', name: '안마기' },
-  { slug: 'watch', name: '워치' },
+  { slug: 'speaker', name: '스피커' },
   { slug: 'camera', name: '카메라' },
+  { slug: 'tv', name: 'TV' },
+  { slug: 'refrigerator', name: '냉장고' },
+  { slug: 'washer', name: '세탁기' },
+  { slug: 'clothes_dryer', name: '의류 건조기' },
+  { slug: 'air_conditioner', name: '에어컨' },
+  { slug: 'air_purifier', name: '공기청정기' },
+  { slug: 'cleaner', name: '청소기' },
+  { slug: 'hair_dryer', name: '헤어드라이기' },
+  { slug: 'massage', name: '안마기' },
   { slug: 'accessory', name: 'IT소품/잡화' }
 ];
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get('secret');
-  const targetCategory = searchParams.get('category'); 
-
+  
   if (secret !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const todayStr = `${year}년 ${month}월 ${Math.ceil(now.getDate() / 7)}주차`;
+  const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
+  const weekNumber = Math.ceil((now.getDate() + 6 - now.getDay()) / 7); 
+  const weekStr = `${now.getMonth() + 1}월 ${weekNumber}주차`;
+
   const results = [];
 
-  const categoriesToProcess = targetCategory 
-    ? CATEGORIES.filter(c => c.slug === targetCategory) 
-    : CATEGORIES;
-
   try {
-    for (const cat of categoriesToProcess) {
-      
-      let strictRules = "";
-      if (cat.slug === 'dryer') {
-        strictRules = `
-          [🚨 드라이기 전용 규칙]
-          1. **오직 '헤어드라이기(Hair Dryer)'만 포함하세요.**
-          2. **절대 금지:** 의류 건조기(Clothes Dryer), 세탁기, 스타일러, 청소기(코드제로, A9).
-          3. **추천 브랜드:** JMW, 유닉스(Unix), 다이슨(Dyson), 레이트(Laifen), 샤크(Shark).
-          4. **주의:** '삼성', 'LG'는 헤어드라이기 주력이 아닙니다. 확실한 모델이 없으면 제외하세요.
-        `;
-      } else if (cat.slug === 'cleaner') {
-        strictRules = `
-          [🚨 청소기 전용 규칙]
-          1. 무선청소기(스틱형)와 로봇청소기만 포함하세요.
-          2. 세탁기, 공기청정기, 드라이기 제외.
-        `;
-      } else if (cat.slug === 'accessory') {
-        strictRules = `
-          [🚨 소품 전용 규칙]
-          1. 알리익스프레스 등에서 인기 있는 가성비 IT 소품(충전기, 케이블, 키캡, 거치대 등) 위주.
-        `;
-      }
+    for (const cat of CATEGORIES) {
+      const prompt = `
+        **${today}** 기준, 대한민국에서 가장 인기 있는 **'${cat.name}'** 판매 순위 TOP 10을 조사하세요.
+        다나와, 네이버 쇼핑, 쿠팡 등의 최신 트렌드를 반영하여 선정하세요.
 
-      const systemPrompt = `
-        당신은 IT 트렌드 분석가입니다. 현재 시점: **${todayStr}**
+        [주의사항]
+        1. 드라이기 카테고리는 '헤어드라이기'만 포함.
+        2. 가격은 현재 판매가(KRW) 기준.
+        3. 단종된 구형 모델 제외.
 
-        '${cat.name}' 카테고리의 **인기 제품 TOP 10**을 선정해주세요.
-        인터넷 검색 없이 당신의 데이터베이스를 바탕으로 **가장 대중적이고 평이 좋은 모델**들을 추천하세요.
-
-        [데이터 작성 규칙]
-        1. **제품명:** 브랜드명 + 모델명 풀네임 (예: LG전자 그램 프로 16)
-        2. **가격 (중요):** 2024~2025년 출시가를 기준으로 2026년 물가 상승분을 반영하여 **원화(KRW) 숫자만** 입력하세요.
-           - 예: 1500000 (O), 150만원 (X), 1,500,000 (X)
-           - **절대로 0원이나 빈칸으로 두지 마세요. 어떻게든 추정치를 넣으세요.**
-        3. **이유:** 해당 제품이 인기 있는 이유를 한 줄로 요약.
-        4. **필터링:**
-           ${strictRules}
-        
         [출력 형식 - JSON Only]
         {
-          "updated_date": "${todayStr}",
+          "updated_date": "${today} 기준 (${weekStr})",
           "list": [
             {
               "rank": 1,
-              "name": "제품명",
+              "name": "브랜드 + 제품명 (풀네임)",
               "price_estimate": 1500000,
-              "reason": "가벼운 무게와 긴 배터리 타임",
-              "change": "NEW"
+              "summary": "핵심 특징 한 줄 요약 (예: 가성비 최고의 게이밍 노트북)",
+              "spec_detail": "상세 스펙 (예: CPU: i7-13700H / RAM: 16GB / GPU: RTX4060 / 무게: 2.1kg)",
+              "pros": "장점 (예: 뛰어난 쿨링 성능)",
+              "cons": "단점 (예: 다소 무거운 무게)",
+              "change": "NEW" (또는 유지, 상승, 하락)
             }
           ]
         }
       `;
 
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "system", content: systemPrompt }],
-        response_format: { type: "json_object" },
-        temperature: 0.5,
-      });
+      const result = await model.generateContent(prompt);
+      const text = cleanGeminiJson(result.response.text());
+      const rankingData = JSON.parse(text);
 
-      const rankingData = JSON.parse(completion.choices[0].message.content || "{}");
-
-      if (rankingData.list && Array.isArray(rankingData.list)) {
-        rankingData.list = rankingData.list.map((item: any) => {
-          let price = item.price_estimate;
-          
-          if (typeof price === 'string') {
-            price = parseInt(price.replace(/[^0-9]/g, ''));
-          }
-          
-          if (isNaN(price) || price === 0) {
-            price = 100000; 
-          }
-
-          return {
-            ...item,
-            price_estimate: price
-          };
-        });
-      }
-
-      const { error } = await supabase.from('rankings').insert({
+      const { error } = await supabase.from('rankings').upsert({
         category: cat.slug,
-        data: rankingData
-      });
+        data: rankingData,
+        created_at: new Date().toISOString()
+      }, { onConflict: 'category' });
 
-      if (!error) results.push({ category: cat.name, status: 'updated' });
+      if (error) console.error(`Error saving ${cat.slug}:`, error);
+      else results.push(cat.slug);
+      
+      await new Promise(res => setTimeout(res, 5000));
     }
 
-    return NextResponse.json({ success: true, date: todayStr, results });
+    return NextResponse.json({ success: true, updated: results });
 
   } catch (error: any) {
+    console.error("Ranking Update Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

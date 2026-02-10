@@ -11,7 +11,6 @@ export default function Disclaimer() {
           <span className="font-bold underline decoration-amber-500 underline-offset-2 ml-1">
             실제 제품의 스펙, 가격, 호환성은 판매 페이지와 다를 수 있습니다.
           </span><br/>
-          반드시 아래 <span className="font-bold text-blue-600">[최저가 보기]</span> 버튼을 눌러 상세 정보를 직접 확인하시기 바랍니다.
         </p>
       </div>
     </div>
