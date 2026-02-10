@@ -36,6 +36,10 @@ export default function Header() {
           <Link href="/rank" className="text-blue-600 font-bold hover:text-blue-700 transition">
             랭킹
           </Link>
+          <Link href="/dictionary" className="text-green-600 font-bold hover:text-green-700 transition flex items-center gap-1">
+             IT용어사전
+             <span className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded-full">NEW</span>
+          </Link>
         </nav>
         
         <div className="w-36 hidden md:block"></div> 
