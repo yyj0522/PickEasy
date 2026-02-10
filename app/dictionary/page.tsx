@@ -142,7 +142,7 @@ export default function DictionaryPage() {
                 <h1 className="text-3xl font-black flex items-center justify-center gap-2 mb-3 text-slate-900">
                     픽이지 IT 용어 백과
                 </h1>
-                <p className="text-slate-500">어려운 IT 용어, 전문가가 쉽게 설명해드립니다.</p>
+                <p className="text-slate-500">어려운 IT 용어, AI가 쉽게 설명해드립니다.</p>
             </div>
 
             <div className="mb-6 relative">
