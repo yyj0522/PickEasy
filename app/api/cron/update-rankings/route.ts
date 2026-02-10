@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { model, cleanGeminiJson } from '@/lib/gemini';
 
+export const dynamic = 'force-dynamic';
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! 
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 const CATEGORIES = [
@@ -33,64 +35,71 @@ const CATEGORIES = [
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get('secret');
-  
+
   if (secret !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+ 
+  const randomIndex = Math.floor(Math.random() * CATEGORIES.length);
+  const targetCategory = CATEGORIES[randomIndex];
   const now = new Date();
   const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
-  const weekNumber = Math.ceil((now.getDate() + 6 - now.getDay()) / 7); 
+  const weekNumber = Math.ceil((now.getDate() + 6 - now.getDay()) / 7);
   const weekStr = `${now.getMonth() + 1}월 ${weekNumber}주차`;
 
-  const results = [];
+  console.log(`[Update Start] Target: ${targetCategory.name} (${today})`);
 
   try {
-    for (const cat of CATEGORIES) {
-      const prompt = `
-        **${today}** 기준, 대한민국에서 가장 인기 있는 **'${cat.name}'** 판매 순위 TOP 10을 조사하세요.
-        다나와, 네이버 쇼핑, 쿠팡 등의 최신 트렌드를 반영하여 선정하세요.
+    const prompt = `
+      **${today}** 기준, 대한민국에서 가장 인기 있는 **'${targetCategory.name}'** 판매 순위 TOP 10을 조사하세요.
+      다나와, 네이버 쇼핑, 쿠팡 등의 최신 트렌드를 반영하여 선정하세요.
 
-        [주의사항]
-        1. 드라이기 카테고리는 '헤어드라이기'만 포함.
-        2. 가격은 현재 판매가(KRW) 기준.
-        3. 단종된 구형 모델 제외.
+      [주의사항]
+      1. 드라이기 카테고리는 '헤어드라이기'만 포함.
+      2. 가격은 현재 판매가(KRW) 기준 숫자만 (예: 1500000).
+      3. 단종된 구형 모델 제외.
+      4. 제품명은 브랜드와 모델명을 정확히 기재.
 
-        [출력 형식 - JSON Only]
-        {
-          "updated_date": "${today} 기준 (${weekStr})",
-          "list": [
-            {
-              "rank": 1,
-              "name": "브랜드 + 제품명 (풀네임)",
-              "price_estimate": 1500000,
-              "summary": "핵심 특징 한 줄 요약 (예: 가성비 최고의 게이밍 노트북)",
-              "spec_detail": "상세 스펙 (예: CPU: i7-13700H / RAM: 16GB / GPU: RTX4060 / 무게: 2.1kg)",
-              "pros": "장점 (예: 뛰어난 쿨링 성능)",
-              "cons": "단점 (예: 다소 무거운 무게)",
-              "change": "NEW" (또는 유지, 상승, 하락)
-            }
-          ]
-        }
-      `;
+      [출력 형식 - JSON Only]
+      {
+        "updated_date": "${today} 기준 (${weekStr})",
+        "list": [
+          {
+            "rank": 1,
+            "name": "브랜드 + 제품명 (풀네임)",
+            "price_estimate": 1500000,
+            "summary": "핵심 특징 한 줄 요약",
+            "spec_detail": "상세 스펙 간략 기재",
+            "pros": "장점",
+            "cons": "단점",
+            "change": "NEW"
+          }
+        ]
+      }
+    `;
 
-      const result = await model.generateContent(prompt);
-      const text = cleanGeminiJson(result.response.text());
-      const rankingData = JSON.parse(text);
+    const result = await model.generateContent(prompt);
+    const text = cleanGeminiJson(result.response.text());
+    const rankingData = JSON.parse(text);
+    const { error } = await supabase.from('rankings').upsert({
+      category: targetCategory.slug,
+      data: rankingData,
+      created_at: new Date().toISOString()
+    }, { onConflict: 'category' });
 
-      const { error } = await supabase.from('rankings').upsert({
-        category: cat.slug,
-        data: rankingData,
-        created_at: new Date().toISOString()
-      }, { onConflict: 'category' });
-
-      if (error) console.error(`Error saving ${cat.slug}:`, error);
-      else results.push(cat.slug);
-      
-      await new Promise(res => setTimeout(res, 5000));
+    if (error) {
+      console.error(`Error saving ${targetCategory.slug}:`, error);
+      throw error;
     }
 
-    return NextResponse.json({ success: true, updated: results });
+    console.log(`[Success] Updated ${targetCategory.name}`);
+    
+    return NextResponse.json({ 
+      success: true, 
+      updated: targetCategory.name, 
+      message: 'Single category updated to prevent timeout' 
+    });
 
   } catch (error: any) {
     console.error("Ranking Update Error:", error);
