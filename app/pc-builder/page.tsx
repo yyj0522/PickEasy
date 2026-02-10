@@ -337,7 +337,7 @@ export default function PCBuilderPage() {
               )}
 
               <div className="p-4 bg-slate-100 text-center text-[10px] text-slate-400 border-t border-slate-200 font-medium">
-                  * 가격은 2026년 2월 기준 다나와/오픈마켓 평균가이며, 실시간 변동될 수 있습니다.
+                  * 가격은 2026년 2월 기준 국내 주요 온라인 마켓 및 검색 포털 평균가이며, 실시간 변동될 수 있습니다.
               </div>
             </div>
 

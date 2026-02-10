@@ -173,7 +173,8 @@ export default function RankPage() {
           <div className="text-sm text-slate-700">
             <p className="font-bold text-blue-800 mb-1 text-base">Beta 서비스 안내</p>
             <p className="leading-relaxed mb-2">
-              본 랭킹은 AI가 다나와, 오픈마켓 등의 데이터를 종합 분석한 결과로, 실제 판매량과 다를 수 있습니다.
+              본 랭킹은 국내 주요 온라인 마켓 및 검색 포털의 빅데이터를 AI가 종합 분석한 결과입니다.
+              실제 판매량과는 다를 수 있습니다.
             </p>
             <p className="flex items-center gap-1 text-slate-500 text-xs">
               <Mail className="w-3 h-3" />
