@@ -1,19 +1,47 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { model, cleanGeminiJson } from '@/lib/gemini';
-import { checkRateLimit } from '@/lib/rate-limit'; 
+import { checkDailyLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: Request) {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown"; 
-  
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: "요청이 너무 많습니다." }, { status: 429 });
+  const { allowed, remaining } = await checkDailyLimit(ip);
+
+  if (!allowed) {
+    return NextResponse.json({ 
+        error: "일일 사용 횟수를 초과했습니다. (하루 5회 제한)",
+        limitReached: true
+    }, { status: 429 });
   }
 
   try {
     const body = await req.json();
-    const { category, query, type, budget, usage, previousResult, refinementRequest } = body;
+    const { type, budget, usage, previousResult, refinementRequest } = body;
+    
+
+    if (type === 'initial') {
+      const { data: cachedData } = await supabase
+        .from('pc_estimates')
+        .select('result')
+        .eq('budget', budget)
+        .eq('usage', usage)
+        .gt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .limit(1)
+        .single();
+
+      if (cachedData) {
+        console.log("💰 캐시 히트! API 비용 절약");
+        return NextResponse.json({ ...cachedData.result, remaining });
+      }
+    }
+
     const now = new Date();
     const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
 
@@ -23,10 +51,6 @@ export async function POST(req: Request) {
       userPrompt = `사용자 요청: 예산 ${budget}만원대로 ${usage} 용도의 조립 PC 견적을 짜줘.`;
     } else if (type === 'refine') {
       userPrompt = `기존 견적: ${JSON.stringify(previousResult)}\n수정 요청: ${refinementRequest}`;
-    } else if (query) {
-      userPrompt = `사용자 질문: ${query}`;
-    } else if (category) {
-      userPrompt = `카테고리: ${category} 추천`;
     } else {
       return NextResponse.json({ error: "입력 내용이 부족합니다." }, { status: 400 });
     }
@@ -70,7 +94,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: data.message }, { status: 400 });
     }
 
-    return NextResponse.json(data);
+    if (type === 'initial') {
+      await supabase.from('pc_estimates').insert({
+        budget: budget,
+        usage: usage,
+        result: data,
+        ip_address: ip 
+      });
+    }
+
+    return NextResponse.json({ ...data, remaining });
 
   } catch (error) {
     console.error("Gemini API Error:", error);

@@ -1,25 +1,51 @@
-const ipRequestMap = new Map<string, { count: number; lastTime: number }>();
-const WINDOW_SIZE = 60 * 1000; 
-const MAX_REQUESTS = 5; 
+import { createClient } from '@supabase/supabase-js';
 
-export function checkRateLimit(ip: string) {
-  const now = Date.now();
-  const record = ipRequestMap.get(ip);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-  if (!record) {
-    ipRequestMap.set(ip, { count: 1, lastTime: now });
-    return true;
+const MAX_DAILY_REQUESTS = 5;
+
+export async function checkDailyLimit(ip: string): Promise<{ allowed: boolean; remaining: number }> {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('daily_usage')
+      .select('request_count')
+      .eq('ip_address', ip)
+      .eq('usage_date', today)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Rate Limit Check Error:', error);
+      return { allowed: true, remaining: 0 };
+    }
+
+    if (data) {
+      if (data.request_count >= MAX_DAILY_REQUESTS) {
+        return { allowed: false, remaining: 0 };
+      }
+
+      await supabase
+        .from('daily_usage')
+        .update({ request_count: data.request_count + 1 })
+        .eq('ip_address', ip)
+        .eq('usage_date', today);
+
+      return { allowed: true, remaining: MAX_DAILY_REQUESTS - data.request_count - 1 };
+    }
+
+    await supabase.from('daily_usage').insert({
+      ip_address: ip,
+      usage_date: today,
+      request_count: 1
+    });
+
+    return { allowed: true, remaining: MAX_DAILY_REQUESTS - 1 };
+
+  } catch (e) {
+    console.error('Rate Limit Logic Error:', e);
+    return { allowed: true, remaining: 1 };
   }
-
-  if (now - record.lastTime > WINDOW_SIZE) {
-    ipRequestMap.set(ip, { count: 1, lastTime: now });
-    return true;
-  }
-
-  if (record.count >= MAX_REQUESTS) {
-    return false;
-  }
-
-  record.count += 1;
-  return true;
 }

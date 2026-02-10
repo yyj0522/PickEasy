@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
 import { model, cleanGeminiJson } from '@/lib/gemini';
-import { checkRateLimit } from '@/lib/rate-limit'; 
+import { checkDailyLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
 
 export async function POST(req: Request) {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown"; 
   
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: "요청이 너무 많습니다." }, { status: 429 });
+  const { allowed, remaining } = await checkDailyLimit(ip);
+
+  if (!allowed) {
+    return NextResponse.json({ 
+      error: "일일 사용 횟수를 초과했습니다. (하루 5회 제한)",
+      limitReached: true 
+    }, { status: 429 });
   }
 
   try {
@@ -58,7 +63,7 @@ export async function POST(req: Request) {
          return NextResponse.json({ error: data.message }, { status: 400 });
        }
 
-       return NextResponse.json(data);
+       return NextResponse.json({ ...data, remaining });
     }
 
     if (!category || !answers) {
@@ -97,7 +102,7 @@ export async function POST(req: Request) {
     const result = await model.generateContent(prompt);
     const data = JSON.parse(cleanGeminiJson(result.response.text()));
 
-    return NextResponse.json(data);
+    return NextResponse.json({ ...data, remaining });
 
   } catch (error) {
     console.error("Gemini Quiz Error:", error);
