@@ -256,16 +256,16 @@ export default function RankPage() {
                         
                         <div className="mb-6 space-y-4">
                           <div className="bg-white p-4 rounded-xl border border-slate-200">
-                            <h4 className="font-bold text-sm text-slate-900 mb-2">상세 스펙</h4>
+                            <h4 className="font-bold text-sm text-slate-900 mb-2">📋 상세 스펙</h4>
                             <p className="text-sm text-slate-600 leading-relaxed">{item.spec_detail}</p>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                              <h4 className="font-bold text-sm text-blue-800 mb-1">장점</h4>
+                              <h4 className="font-bold text-sm text-blue-800 mb-1">👍 장점</h4>
                               <p className="text-sm text-blue-700">{item.pros}</p>
                             </div>
                             <div className="bg-red-50 p-4 rounded-xl border border-red-100">
-                              <h4 className="font-bold text-sm text-red-800 mb-1">단점</h4>
+                              <h4 className="font-bold text-sm text-red-800 mb-1">👎 단점</h4>
                               <p className="text-sm text-red-700">{item.cons}</p>
                             </div>
                           </div>
