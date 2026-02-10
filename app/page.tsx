@@ -45,6 +45,13 @@ const DESKTOP_BANNERS: Banner[] = [
     imgSrc: 'https://ads-partners.coupang.com/banners/963102?subId=&traceId=V0-301-5f9bd61900e673c0-I963102&w=728&h=90',
     width: 728, height: 90, alt: '쿠팡',
     isCoupang: true
+  },
+  {
+    id: 'aliexpress_d',
+    href: 'https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=8PXG&u_id=',
+    imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20230509/AO0161bmd0580_728x90.png',
+    width: 728, height: 90, alt: '알리익스프레스',
+    trackingSrc: 'http://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=8PXG&l_cd1=2&l_cd2=0'
   }
 ];
 

@@ -5,7 +5,6 @@ import { Swords, Trophy, Loader2, ArrowRightLeft, AlertTriangle } from 'lucide-r
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
 
-// 광고 배너 데이터 (PC 견적 페이지와 동일)
 type Banner = {
   id: string;
   href: string;
@@ -18,52 +17,59 @@ type Banner = {
 };
 
 const DESKTOP_BANNERS: Banner[] = [
-  { // 지마켓
+  { 
     id: 'gmarket_d',
     href: 'https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=6775&u_id=',
     imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20221004/K00HwzuaHqe00_728x90.jpg',
     width: 728, height: 90, alt: 'G마켓',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=6775&l_cd1=2&l_cd2=0'
   },
-  { // 레노버
+  { 
     id: 'lenovo_d',
     href: 'https://click.linkprice.com/click.php?m=lenovo&a=A100702467&l=DKT0&u_id=',
     imgSrc: 'https://img.linkprice.com/files/glink/lenovo/20250516/000vtShk00000_레노버 728x90.png',
     width: 728, height: 90, alt: '레노버',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=lenovo&a_id=A100702467&p_id=0000&l_id=DKT0&l_cd1=2&l_cd2=0'
   },
-  { // 하이마트
+  { 
     id: 'himart_d',
     href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=Oze4&u_id=',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20250630/686230aa8d3de_728x90.png',
     width: 728, height: 90, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=Oze4&l_cd1=2&l_cd2=0'
   },
-  { // 쿠팡
+  { 
     id: 'coupang_d',
     href: 'https://link.coupang.com/a/dJuZZw',
     imgSrc: 'https://ads-partners.coupang.com/banners/963102?subId=&traceId=V0-301-5f9bd61900e673c0-I963102&w=728&h=90',
     width: 728, height: 90, alt: '쿠팡',
     isCoupang: true
+  },
+  {
+    id: 'aliexpress_d',
+    href: 'https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=8PXG&u_id=',
+    imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20230509/AO0161bmd0580_728x90.png',
+    width: 728, height: 90, alt: '알리익스프레스',
+    trackingSrc: 'http://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=8PXG&l_cd1=2&l_cd2=0'
   }
 ];
 
 const MOBILE_BANNERS: Banner[] = [
-  { // 하이마트 1
+  { 
     id: 'himart_m1',
     href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=TJzp&u_id=',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20260129/697b2513716b9_468x60.png',
     width: 468, height: 60, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=TJzp&l_cd1=2&l_cd2=0'
   },
-  { // 하이마트 2
+  { 
     id: 'himart_m2',
     href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=xGIZ&u_id=',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20250630/686230aa8c8c3_468x60.png',
     width: 468, height: 60, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=xGIZ&l_cd1=2&l_cd2=0'
   },
-  { // 지마켓
+  { 
     id: 'gmarket_m',
     href: 'https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=A7tz&u_id=',
     imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20221004/W800QYbQ7zS00_468x60.jpg',
@@ -123,8 +129,7 @@ export default function VSPage() {
       <div className="flex-1 max-w-4xl mx-auto px-4 pt-12 w-full flex flex-col pb-0">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black mb-3 flex items-center justify-center gap-2 text-slate-900">
-            <Swords className="w-8 h-8 text-red-500" />
-            스펙 맞짱 (VS)
+            스펙 비교
           </h1>
           <p className="text-slate-500 font-medium">
             애매한 스펙 차이, 고민하지 마세요.<br/>
@@ -184,7 +189,6 @@ export default function VSPage() {
             <Disclaimer />
             
             <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
-              {/* 비교 헤더 */}
               <div className="grid grid-cols-3 bg-slate-50 border-b border-slate-200 divide-x divide-slate-200">
                 <div className="p-5 text-center font-bold text-blue-700 break-keep flex items-center justify-center bg-blue-50/30">
                   {result.productA_name}
@@ -197,22 +201,18 @@ export default function VSPage() {
                 </div>
               </div>
 
-              {/* 스펙 리스트 */}
               <div className="divide-y divide-slate-100">
                 {result.specs?.map((item: any, idx: number) => (
                   <div key={idx} className="grid grid-cols-3 divide-x divide-slate-100 group hover:bg-slate-50 transition-colors">
-                    {/* A 제품 스펙 */}
                     <div className={`p-4 text-center text-sm flex flex-col items-center justify-center gap-1 ${item.winner === 'A' ? 'font-bold text-blue-700 bg-blue-50/40' : 'text-slate-600'}`}>
                       {item.winner === 'A' && <Trophy className="w-4 h-4 text-yellow-500 drop-shadow-sm mb-1" />}
                       <span>{item.specA}</span>
                     </div>
                     
-                    {/* 카테고리 명 */}
                     <div className="p-4 flex items-center justify-center text-[11px] font-bold text-slate-400 uppercase tracking-wide bg-slate-50/50">
                       {item.category}
                     </div>
                     
-                    {/* B 제품 스펙 */}
                     <div className={`p-4 text-center text-sm flex flex-col items-center justify-center gap-1 ${item.winner === 'B' ? 'font-bold text-red-700 bg-red-50/40' : 'text-slate-600'}`}>
                       {item.winner === 'B' && <Trophy className="w-4 h-4 text-yellow-500 drop-shadow-sm mb-1" />}
                       <span>{item.specB}</span>
@@ -221,7 +221,6 @@ export default function VSPage() {
                 ))}
               </div>
 
-              {/* 최종 판정 */}
               <div className="p-8 bg-slate-900 text-white text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-red-500"></div>
                 <h3 className="font-bold text-yellow-400 mb-2 text-lg flex items-center justify-center gap-2">
@@ -249,7 +248,6 @@ export default function VSPage() {
                   <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=nyIP&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
 
-                {/* G마켓 (원본 크기) */}
                 <div className="hover:opacity-80 transition-opacity">
                   <a target="_blank" href="https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=1638&u_id=" rel="noopener noreferrer nofollow">
                     <img src="https://img.linkprice.com/files/glink/gmarket/20191120/5dd48d65a8c5e_120_60.jpg" width="120" height="60" alt="G마켓" style={{ border: 0 }} />
@@ -257,20 +255,31 @@ export default function VSPage() {
                   <img src="https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=1638&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
 
-                {/* 쿠팡 (원본 크기) */}
                 <div className="hover:opacity-80 transition-opacity">
                   <a href="https://link.coupang.com/a/dJuj4r" target="_blank" rel="noopener noreferrer nofollow">
                     <img src="https://ads-partners.coupang.com/banners/964225?subId=&traceId=V0-301-5f9bd61900e673c0-I964225&w=120&h=60" alt="쿠팡" width="120" height="60" />
                   </a>
                 </div>
+
+                <div className="hover:opacity-80 transition-opacity">
+                  <a target="_blank" href="https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=Cq7c&u_id=" rel="noopener noreferrer nofollow">
+                    <img src="https://img.linkprice.com/files/glink/aliexpress/20240328/600GgnC4eLAW0_120_60.png" width="120" height="60" alt="알리익스프레스" style={{ border: 0 }} />
+                  </a>
+                  <img src="http://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=Cq7c&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-slate-50 text-center">
+                 <p className="text-[10px] text-slate-400 font-medium">
+                   이 사이트는 쿠팡 파트너스 및 제휴 마케팅 활동의 일환으로,<br/>
+                   이에 따른 일정액의 수수료를 제공받습니다.
+                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* 🔻 랜덤 광고 배너 영역 */}
         <div className="w-full flex justify-center items-center mt-8 mb-4 overflow-hidden">
-          {/* 데스크탑 (md 이상) */}
           <div className="hidden md:block">
             {randomDesktop && (
               <a href={randomDesktop.href} target="_blank" rel="noopener noreferrer nofollow">
@@ -289,7 +298,6 @@ export default function VSPage() {
             )}
           </div>
 
-          {/* 모바일 (md 미만) */}
           <div className="block md:hidden">
              {randomMobile && (
               <a href={randomMobile.href} target="_blank" rel="noopener noreferrer nofollow">

@@ -5,6 +5,7 @@ import { Calculator, Cpu, Loader2, RotateCcw, MessageSquarePlus, Share2, Downloa
 import { toPng } from 'html-to-image';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
+import { DesktopSideBanners } from '@/components/ads/AdBanners';
 
 type Banner = {
   id: string;
@@ -45,6 +46,13 @@ const DESKTOP_BANNERS: Banner[] = [
     imgSrc: 'https://ads-partners.coupang.com/banners/963102?subId=&traceId=V0-301-5f9bd61900e673c0-I963102&w=728&h=90',
     width: 728, height: 90, alt: '쿠팡',
     isCoupang: true
+  },
+  {
+    id: 'aliexpress_d',
+    href: 'https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=8PXG&u_id=',
+    imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20230509/AO0161bmd0580_728x90.png',
+    width: 728, height: 90, alt: '알리익스프레스',
+    trackingSrc: 'http://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=8PXG&l_cd1=2&l_cd2=0'
   }
 ];
 
@@ -180,7 +188,7 @@ export default function PCBuilderPage() {
     if (!result) return;
 
     const shareText = `[PickEasy AI 조립PC 견적]\n\n` +
-      `💡 ${result.intro}\n` +
+      `${result.intro}\n` +
       `예상 총액: ${result.total_price_estimate?.toLocaleString()}원\n\n` +
       result.parts.map((p: any) => `- ${p.part}: ${p.name}`).join('\n') +
       `\n\n견적 받으러 가기: ${window.location.origin}/pc-builder`;
@@ -208,8 +216,12 @@ export default function PCBuilderPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <div className="flex-1 max-w-3xl mx-auto px-4 pt-12 w-full flex flex-col pb-0">
+        
+        <DesktopSideBanners />
+
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black mb-3 flex items-center justify-center gap-2 text-slate-900">
+            <Calculator className="w-8 h-8 text-indigo-600" />
             AI 조립 PC 견적
           </h1>
           <p className="text-slate-500 font-medium">
@@ -379,6 +391,13 @@ export default function PCBuilderPage() {
                   <a href="https://link.coupang.com/a/dJuj4r" target="_blank" rel="noopener noreferrer nofollow">
                     <img src="https://ads-partners.coupang.com/banners/964225?subId=&traceId=V0-301-5f9bd61900e673c0-I964225&w=120&h=60" alt="쿠팡" width="120" height="60" />
                   </a>
+                </div>
+
+                <div className="hover:opacity-80 transition-opacity">
+                  <a target="_blank" href="https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=Cq7c&u_id=" rel="noopener noreferrer nofollow">
+                    <img src="https://img.linkprice.com/files/glink/aliexpress/20240328/600GgnC4eLAW0_120_60.png" width="120" height="60" alt="알리익스프레스" style={{ border: 0 }} />
+                  </a>
+                  <img src="http://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=Cq7c&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
               </div>
               
