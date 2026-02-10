@@ -35,20 +35,31 @@ const CATEGORIES = [
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get('secret');
+  const manualSlug = searchParams.get('slug'); 
 
   if (secret !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
- 
-  const randomIndex = Math.floor(Math.random() * CATEGORIES.length);
-  const targetCategory = CATEGORIES[randomIndex];
+  let targetCategory;
+
+  if (manualSlug) {
+    targetCategory = CATEGORIES.find(c => c.slug === manualSlug);
+    if (!targetCategory) {
+      return NextResponse.json({ error: `Category '${manualSlug}' not found` }, { status: 404 });
+    }
+  } else {
+    const currentHour = new Date().getHours(); 
+    const targetIndex = currentHour % CATEGORIES.length; 
+    targetCategory = CATEGORIES[targetIndex];
+  }
+
   const now = new Date();
   const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
   const weekNumber = Math.ceil((now.getDate() + 6 - now.getDay()) / 7);
   const weekStr = `${now.getMonth() + 1}월 ${weekNumber}주차`;
 
-  console.log(`[Update Start] Target: ${targetCategory.name} (${today})`);
+  console.log(`[Update Start] Target: ${targetCategory.name} (Mode: ${manualSlug ? 'Manual' : 'Auto'})`);
 
   try {
     const prompt = `
@@ -82,27 +93,23 @@ export async function GET(req: Request) {
     const result = await model.generateContent(prompt);
     const text = cleanGeminiJson(result.response.text());
     const rankingData = JSON.parse(text);
+
     const { error } = await supabase.from('rankings').upsert({
       category: targetCategory.slug,
       data: rankingData,
       created_at: new Date().toISOString()
     }, { onConflict: 'category' });
 
-    if (error) {
-      console.error(`Error saving ${targetCategory.slug}:`, error);
-      throw error;
-    }
+    if (error) throw error;
 
-    console.log(`[Success] Updated ${targetCategory.name}`);
-    
     return NextResponse.json({ 
       success: true, 
-      updated: targetCategory.name, 
-      message: 'Single category updated to prevent timeout' 
+      updated: targetCategory.name,
+      mode: manualSlug ? 'Manual' : 'Auto-Hourly'
     });
 
   } catch (error: any) {
-    console.error("Ranking Update Error:", error);
+    console.error(`Ranking Update Error (${targetCategory.name}):`, error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
