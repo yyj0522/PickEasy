@@ -160,7 +160,6 @@ export default function RankPage() {
 
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black flex items-center justify-center gap-2 mb-3 text-slate-900">
-            <TrendingUp className="text-blue-600 w-8 h-8" />
             이달의 트렌드 랭킹
           </h1>
           <p className="text-slate-500 font-medium">
@@ -288,7 +287,7 @@ export default function RankPage() {
                             className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors w-full md:w-auto text-center flex items-center justify-center gap-2 shadow-lg"
                           >
                             <ExternalLink className="w-4 h-4" />
-                            전문가 상세 분석 & 리뷰 보기
+                            AI 상세 분석 & 리뷰 보기
                           </Link>
                         </div>
 

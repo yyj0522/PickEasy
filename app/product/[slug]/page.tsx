@@ -203,34 +203,34 @@ export default function ProductDetailPage() {
         <div className="space-y-8 mb-12">
             
             <section>
-                <h2 className="text-2xl font-bold mb-4 border-b border-slate-100 pb-2">🧐 픽이지 전문가 리뷰</h2>
+                <h2 className="text-2xl font-bold mb-4 border-b border-slate-100 pb-2">AI 상세분석 & 리뷰</h2>
                 <div className="prose prose-slate max-w-none text-slate-700 leading-8 text-lg">
                    <p><TermHighlighter text={product.expert_review || "상세 리뷰 데이터가 준비 중입니다."} /></p>
                 </div>
             </section>
 
             <section className="bg-blue-50/50 rounded-xl p-6 border border-blue-100">
-                <h2 className="text-lg font-bold mb-2 text-blue-900">💡 이런 분께 강력 추천합니다</h2>
+                <h2 className="text-lg font-bold mb-2 text-blue-900">이런 분께 강력 추천합니다</h2>
                 <p className="text-blue-800"><TermHighlighter text={product.usage_scenario || "정보 없음"} /></p>
             </section>
 
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="border border-slate-200 rounded-xl p-5">
                     <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
-                        <span className="text-green-500">👍</span> 장점
+                        <span className="text-green-500"></span> 장점
                     </h3>
                     <p className="text-slate-600 text-sm leading-relaxed"><TermHighlighter text={product.pros} /></p>
                 </div>
                 <div className="border border-slate-200 rounded-xl p-5">
                     <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
-                         <span className="text-red-500">👎</span> 단점
+                         <span className="text-red-500"></span> 단점
                     </h3>
                     <p className="text-slate-600 text-sm leading-relaxed"><TermHighlighter text={product.cons} /></p>
                 </div>
             </section>
 
             <section>
-                <h2 className="text-xl font-bold mb-4">⚙️ 상세 스펙</h2>
+                <h2 className="text-xl font-bold mb-4">상세 스펙</h2>
                 <div className="bg-white border border-slate-200 rounded-xl p-6 text-sm text-slate-600 leading-loose">
                     <TermHighlighter text={product.spec_detail} />
                 </div>

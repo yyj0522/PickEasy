@@ -140,7 +140,6 @@ export default function DictionaryPage() {
             
             <div className="text-center mb-10">
                 <h1 className="text-3xl font-black flex items-center justify-center gap-2 mb-3 text-slate-900">
-                    <BookOpen className="text-green-600 w-8 h-8" />
                     픽이지 IT 용어 백과
                 </h1>
                 <p className="text-slate-500">어려운 IT 용어, 전문가가 쉽게 설명해드립니다.</p>
