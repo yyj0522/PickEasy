@@ -6,6 +6,7 @@ import { toPng } from 'html-to-image';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';
+import SecurityWidget from '@/components/common/SecurityWidget';
 
 type Banner = {
   id: string;
@@ -93,6 +94,7 @@ export default function PCBuilderPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const [currentDateStr, setCurrentDateStr] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
 
   const [input, setInput] = useState({
     budget: '',
@@ -110,6 +112,7 @@ export default function PCBuilderPage() {
 
   const handleSubmit = async () => {
     if (!input.budget || !input.usage) return alert("예산과 용도를 입력해주세요!");
+    if (!turnstileToken) return alert("보안 확인 중입니다. 잠시만 기다려주세요.");
     
     setLoading(true);
     setResult(null);
@@ -119,7 +122,7 @@ export default function PCBuilderPage() {
       const res = await fetch('/api/recommend/pc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'initial', ...input }),
+        body: JSON.stringify({ type: 'initial', ...input, turnstileToken }),
       });
       
       const data = await res.json();
@@ -139,6 +142,7 @@ export default function PCBuilderPage() {
   const handleRefine = async () => {
     if (!refinementRequest) return alert("수정할 내용을 입력해주세요!");
     if (isRefined) return alert("수정 요청은 1회만 가능합니다.");
+    if (!turnstileToken) return alert("보안 확인 중입니다. 잠시만 기다려주세요.");
 
     setLoading(true);
 
@@ -149,7 +153,8 @@ export default function PCBuilderPage() {
         body: JSON.stringify({ 
           type: 'refine', 
           previousResult: result, 
-          refinementRequest 
+          refinementRequest,
+          turnstileToken
         }),
       });
       
@@ -241,6 +246,7 @@ export default function PCBuilderPage() {
               <label className="block text-sm font-bold text-slate-700 mb-2">예산이 얼마인가요?</label>
               <input 
                 type="text" 
+                maxLength={70}
                 placeholder="예: 150만원, 200만원 등"
                 className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition font-medium text-slate-900 placeholder:text-slate-400"
                 value={input.budget}
@@ -251,6 +257,7 @@ export default function PCBuilderPage() {
               <label className="block text-sm font-bold text-slate-700 mb-2">주 용도가 무엇인가요?</label>
               <input 
                 type="text" 
+                maxLength={70}
                 placeholder="예: 배틀그라운드 풀옵션, 4K 영상편집, 코딩용"
                 className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition font-medium text-slate-900 placeholder:text-slate-400"
                 value={input.usage}
@@ -261,12 +268,15 @@ export default function PCBuilderPage() {
               <label className="block text-sm font-bold text-slate-700 mb-2">기타 요청사항 (선택)</label>
               <textarea 
                 rows={3}
+                maxLength={70}
                 placeholder="예: 화이트 감성으로 맞춰주세요. 소음이 적었으면 좋겠어요."
                 className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none transition font-medium text-slate-900 placeholder:text-slate-400"
                 value={input.preferences}
                 onChange={(e) => setInput({...input, preferences: e.target.value})}
               />
             </div>
+
+            <SecurityWidget onVerify={setTurnstileToken} />
 
             <button 
               onClick={handleSubmit}
@@ -423,6 +433,7 @@ export default function PCBuilderPage() {
                 <div className="flex gap-2">
                   <input 
                     type="text" 
+                    maxLength={70}
                     placeholder="예: SSD 용량 1테라로 늘려줘, 화이트로 바꿔줘"
                     className="flex-1 p-3 bg-slate-700 border border-slate-600 rounded-xl focus:border-yellow-400 outline-none text-white placeholder:text-slate-400"
                     value={refinementRequest}
@@ -458,7 +469,7 @@ export default function PCBuilderPage() {
                   alt={randomDesktop.alt} 
                   width={randomDesktop.width} 
                   height={randomDesktop.height} 
-                  className="max-w-full h-auto"
+                  className="max-w-full h-auto rounded-lg"
                   {...(randomDesktop.isCoupang && { referrerPolicy: 'unsafe-url' })}
                 />
                 {randomDesktop.trackingSrc && (
@@ -476,7 +487,7 @@ export default function PCBuilderPage() {
                   alt={randomMobile.alt} 
                   width={randomMobile.width} 
                   height={randomMobile.height} 
-                  className="max-w-full h-auto"
+                  className="max-w-full h-auto rounded-lg"
                 />
                 {randomMobile.trackingSrc && (
                    <img src={randomMobile.trackingSrc} width="1" height="1" alt="" style={{ display: 'none' }} />

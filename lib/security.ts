@@ -3,7 +3,10 @@ import { z } from 'zod';
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 export async function verifyTurnstileToken(token: string): Promise<boolean> {
-  if (!token) return false;
+  if (!token) {
+    console.error("❌ [Turnstile Error] 클라이언트에서 토큰이 넘어오지 않았습니다.");
+    return false;
+  }
 
   try {
     const res = await fetch(TURNSTILE_VERIFY_URL, {
@@ -16,9 +19,15 @@ export async function verifyTurnstileToken(token: string): Promise<boolean> {
     });
 
     const data = await res.json();
+
+    if (!data.success) {
+      console.error("❌ [Turnstile Verify Failed] Cloudflare 응답:", JSON.stringify(data));
+      return false;
+    }
+
     return data.success;
   } catch (error) {
-    console.error('Turnstile Verify Error:', error);
+    console.error('❌ [Turnstile Verify Error] Fetch 통신 실패:', error);
     return false;
   }
 }

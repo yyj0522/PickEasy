@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'; 
 import Link from 'next/link';
-import { Search, Calculator, Swords, TrendingUp, Monitor, Tv, Mouse, Keyboard, Tablet, Fan, Wind, Headphones, Armchair, Watch, Camera, Plug, Speaker, Refrigerator, Waves, Shirt, Snowflake, Zap, Cpu, Laptop } from 'lucide-react'; 
+import { Search, Calculator, Swords, TrendingUp } from 'lucide-react'; 
 import Footer from '@/components/layout/Footer';
 
 type Banner = {
@@ -20,35 +20,35 @@ type Banner = {
 const DESKTOP_BANNERS: Banner[] = [
   { 
     id: 'gmarket_d',
-    href: 'https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=6775&u_id=',
+    href: '/api/ad?id=gmarket_d',
     imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20221004/K00HwzuaHqe00_728x90.jpg',
     width: 728, height: 90, alt: 'G마켓',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=6775&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'lenovo_d',
-    href: 'https://click.linkprice.com/click.php?m=lenovo&a=A100702467&l=DKT0&u_id=',
+    href: '/api/ad?id=lenovo_d',
     imgSrc: 'https://img.linkprice.com/files/glink/lenovo/20250516/000vtShk00000_레노버 728x90.png',
     width: 728, height: 90, alt: '레노버',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=lenovo&a_id=A100702467&p_id=0000&l_id=DKT0&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'himart_d',
-    href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=Oze4&u_id=',
+    href: '/api/ad?id=himart_d',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20250630/686230aa8d3de_728x90.png',
     width: 728, height: 90, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=Oze4&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'coupang_d',
-    href: 'https://link.coupang.com/a/dJuZZw',
+    href: '/api/ad?id=coupang_d',
     imgSrc: 'https://ads-partners.coupang.com/banners/963102?subId=&traceId=V0-301-5f9bd61900e673c0-I963102&w=728&h=90',
     width: 728, height: 90, alt: '쿠팡',
     isCoupang: true
   },
   {
     id: 'aliexpress_d',
-    href: 'https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=8PXG&u_id=',
+    href: '/api/ad?id=aliexpress_d',
     imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20230509/AO0161bmd0580_728x90.png',
     width: 728, height: 90, alt: '알리익스프레스',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=8PXG&l_cd1=2&l_cd2=0'
@@ -58,21 +58,21 @@ const DESKTOP_BANNERS: Banner[] = [
 const MOBILE_BANNERS: Banner[] = [
   { 
     id: 'himart_m1',
-    href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=TJzp&u_id=',
+    href: '/api/ad?id=himart_m1',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20260129/697b2513716b9_468x60.png',
     width: 468, height: 60, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=TJzp&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'himart_m2',
-    href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=xGIZ&u_id=',
+    href: '/api/ad?id=himart_m2',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20250630/686230aa8c8c3_468x60.png',
     width: 468, height: 60, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=xGIZ&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'gmarket_m',
-    href: 'https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=A7tz&u_id=',
+    href: '/api/ad?id=gmarket_m',
     imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20221004/W800QYbQ7zS00_468x60.jpg',
     width: 468, height: 60, alt: 'G마켓',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=A7tz&l_cd1=2&l_cd2=0'
@@ -122,6 +122,7 @@ export default function Home() {
           <div className="relative max-w-xl mx-auto mt-8 shadow-xl rounded-2xl">
             <input 
               type="text" 
+              maxLength={50}
               placeholder="예: 100만원대 가성비 노트북 추천해줘" 
               className="w-full h-14 pl-6 pr-14 rounded-2xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 text-lg shadow-sm transition-all"
               value={query}

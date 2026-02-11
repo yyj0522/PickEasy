@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Swords, Trophy, Loader2, ArrowRightLeft, AlertTriangle } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
+import SecurityWidget from '@/components/common/SecurityWidget';
 
 type Banner = {
   id: string;
@@ -82,6 +83,7 @@ export default function VSPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
 
   const [inputs, setInputs] = useState({
     a: '',
@@ -98,6 +100,7 @@ export default function VSPage() {
 
   const handleCompare = async () => {
     if (!inputs.a || !inputs.b) return alert("두 제품명을 모두 입력해주세요!");
+    if (!turnstileToken) return alert("보안 확인 중입니다. 잠시만 기다려주세요.");
     
     setLoading(true);
     setResult(null);
@@ -107,7 +110,11 @@ export default function VSPage() {
       const res = await fetch('/api/vs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productA: inputs.a, productB: inputs.b }),
+        body: JSON.stringify({ 
+          productA: inputs.a, 
+          productB: inputs.b,
+          turnstileToken
+        }),
       });
       
       const data = await res.json();
@@ -142,6 +149,7 @@ export default function VSPage() {
             <label className="block text-xs font-bold text-blue-600 mb-2 ml-1 tracking-wider">🔵 BLUE CORNER</label>
             <input 
               type="text" 
+              maxLength={30}
               placeholder="예: 갤럭시북4 프로"
               className="w-full p-4 bg-blue-50/50 border border-blue-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-lg font-bold text-center placeholder:font-normal placeholder:text-blue-300 transition text-slate-800"
               value={inputs.a}
@@ -158,6 +166,7 @@ export default function VSPage() {
             <label className="block text-xs font-bold text-red-600 mb-2 ml-1 tracking-wider">🔴 RED CORNER</label>
             <input 
               type="text" 
+              maxLength={30}
               placeholder="예: 맥북 에어 M3"
               className="w-full p-4 bg-red-50/50 border border-red-100 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-lg font-bold text-center placeholder:font-normal placeholder:text-red-300 transition text-slate-800"
               value={inputs.b}
@@ -166,6 +175,8 @@ export default function VSPage() {
             />
           </div>
         </div>
+
+        <SecurityWidget onVerify={setTurnstileToken} />
 
         <button 
           onClick={handleCompare}
