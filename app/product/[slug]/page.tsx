@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle} from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation'; // [중요] useParams 추가
+import { useParams } from 'next/navigation';
 import Footer from '@/components/layout/Footer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';
 import TermHighlighter from '@/components/common/TermHighlighter';
@@ -28,35 +28,35 @@ type Banner = {
 const DESKTOP_BANNERS: Banner[] = [
   { 
     id: 'gmarket_d',
-    href: 'https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=6775&u_id=',
+    href: '/api/ad?id=gmarket_d',
     imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20221004/K00HwzuaHqe00_728x90.jpg',
     width: 728, height: 90, alt: 'G마켓',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=6775&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'lenovo_d',
-    href: 'https://click.linkprice.com/click.php?m=lenovo&a=A100702467&l=DKT0&u_id=',
+    href: '/api/ad?id=lenovo_d',
     imgSrc: 'https://img.linkprice.com/files/glink/lenovo/20250516/000vtShk00000_레노버 728x90.png',
     width: 728, height: 90, alt: '레노버',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=lenovo&a_id=A100702467&p_id=0000&l_id=DKT0&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'himart_d',
-    href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=Oze4&u_id=',
+    href: '/api/ad?id=himart_d',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20250630/686230aa8d3de_728x90.png',
     width: 728, height: 90, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=Oze4&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'coupang_d',
-    href: 'https://link.coupang.com/a/dJuZZw',
+    href: '/api/ad?id=coupang_d',
     imgSrc: 'https://ads-partners.coupang.com/banners/963102?subId=&traceId=V0-301-5f9bd61900e673c0-I963102&w=728&h=90',
     width: 728, height: 90, alt: '쿠팡',
     isCoupang: true
   },
   {
     id: 'aliexpress_d',
-    href: 'https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=8PXG&u_id=',
+    href: '/api/ad?id=aliexpress_d',
     imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20230509/AO0161bmd0580_728x90.png',
     width: 728, height: 90, alt: '알리익스프레스',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=8PXG&l_cd1=2&l_cd2=0'
@@ -66,21 +66,21 @@ const DESKTOP_BANNERS: Banner[] = [
 const MOBILE_BANNERS: Banner[] = [
   { 
     id: 'himart_m1',
-    href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=TJzp&u_id=',
+    href: '/api/ad?id=himart_m1',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20260129/697b2513716b9_468x60.png',
     width: 468, height: 60, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=TJzp&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'himart_m2',
-    href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=xGIZ&u_id=',
+    href: '/api/ad?id=himart_m2',
     imgSrc: 'https://img.linkprice.com/files/glink/himart/20250630/686230aa8c8c3_468x60.png',
     width: 468, height: 60, alt: '하이마트',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=xGIZ&l_cd1=2&l_cd2=0'
   },
   { 
     id: 'gmarket_m',
-    href: 'https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=A7tz&u_id=',
+    href: '/api/ad?id=gmarket_m',
     imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20221004/W800QYbQ7zS00_468x60.jpg',
     width: 468, height: 60, alt: 'G마켓',
     trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=A7tz&l_cd1=2&l_cd2=0'
@@ -88,20 +88,18 @@ const MOBILE_BANNERS: Banner[] = [
 ];
 
 const BOTTOM_GRID_BANNERS = [
-  { href: 'https://click.linkprice.com/click.php?m=himart&a=A100702467&l=nyIP&u_id=', imgSrc: 'https://img.linkprice.com/files/glink/himart/20260129/697b25135c355_120x60.png', alt: '하이마트' },
-  { href: 'https://click.linkprice.com/click.php?m=gmarket&a=A100702467&l=1638&u_id=', imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20191120/5dd48d65a8c5e_120_60.jpg', alt: 'G마켓' },
-  { href: 'https://link.coupang.com/a/dJuj4r', imgSrc: 'https://ads-partners.coupang.com/banners/964225?subId=&traceId=V0-301-5f9bd61900e673c0-I964225&w=120&h=60', alt: '쿠팡', isCoupang: true },
-  { href: 'https://click.linkprice.com/click.php?m=aliexpress&a=A100702467&l=Cq7c&u_id=', imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20240328/600GgnC4eLAW0_120_60.png', alt: '알리익스프레스' }
+  { href: '/api/ad?id=grid_himart', imgSrc: 'https://img.linkprice.com/files/glink/himart/20260129/697b25135c355_120x60.png', alt: '하이마트' },
+  { href: '/api/ad?id=grid_gmarket', imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20191120/5dd48d65a8c5e_120_60.jpg', alt: 'G마켓' },
+  { href: '/api/ad?id=grid_coupang', imgSrc: 'https://ads-partners.coupang.com/banners/964225?subId=&traceId=V0-301-5f9bd61900e673c0-I964225&w=120&h=60', alt: '쿠팡', isCoupang: true },
+  { href: '/api/ad?id=grid_aliexpress', imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20240328/600GgnC4eLAW0_120_60.png', alt: '알리익스프레스' }
 ];
 
-// props 대신 useParams 사용을 위해 타입 제거
 export default function ProductDetailPage() {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [randomDesktop, setRandomDesktop] = useState<Banner | null>(null);
   const [randomMobile, setRandomMobile] = useState<Banner | null>(null);
   
-  // [핵심 수정] params props 대신 useParams 훅 사용
   const params = useParams();
   const slug = params?.slug as string; 
   const productName = slug ? decodeURIComponent(slug) : '';
@@ -111,7 +109,6 @@ export default function ProductDetailPage() {
     setRandomMobile(MOBILE_BANNERS[Math.floor(Math.random() * MOBILE_BANNERS.length)]);
 
     async function fetchProductData() {
-      // slug가 없으면 실행하지 않음
       if (!productName) return;
 
       setLoading(true);
@@ -129,7 +126,6 @@ export default function ProductDetailPage() {
           if (!categoryData.data?.list) continue;
           
           const found = categoryData.data.list.find((item: any) => 
-            // 이름 비교 (공백 제거)
             item.name.trim() === productName.trim()
           );
           
@@ -203,7 +199,7 @@ export default function ProductDetailPage() {
         <div className="space-y-8 mb-12">
             
             <section>
-                <h2 className="text-2xl font-bold mb-4 border-b border-slate-100 pb-2">AI 상세분석 & 리뷰</h2>
+                <h2 className="text-2xl font-bold mb-4 border-b border-slate-100 pb-2">픽이지 AI 리뷰</h2>
                 <div className="prose prose-slate max-w-none text-slate-700 leading-8 text-lg">
                    <p><TermHighlighter text={product.expert_review || "상세 리뷰 데이터가 준비 중입니다."} /></p>
                 </div>

@@ -1,5 +1,9 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  productionBrowserSourceMaps: false, 
+  poweredByHeader: false,
+
   images: {
     qualities: [75, 100], 
   },
