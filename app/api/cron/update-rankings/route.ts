@@ -37,9 +37,10 @@ export async function GET(req: Request) {
   const secret = searchParams.get('secret');
   const manualSlug = searchParams.get('slug'); 
 
-  if (secret !== process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  
+  if (secret !== process.env.CRON_SECRET) { 
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
 
   let targetCategory;
 
@@ -96,26 +97,22 @@ export async function GET(req: Request) {
     const result = await model.generateContent(prompt);
     let text = result.response.text();
 
-    // 마크다운 제거
     text = text.replace(/```json/g, "").replace(/```/g, "");
     
-    // JSON 추출 로직 강화
     const firstBrace = text.indexOf('{');
     const lastBrace = text.lastIndexOf('}');
     
     if (firstBrace !== -1 && lastBrace !== -1) {
       text = text.substring(firstBrace, lastBrace + 1);
     } else {
-      console.error("AI Response Text:", text); // 디버깅용 로그
+      console.error("AI Response Text:", text);
       throw new Error("Valid JSON not found in response");
     }
 
-    // JSON 파싱 시도 (실패 시 에러 로그 출력)
     let rankingData;
     try {
         rankingData = JSON.parse(text);
     } catch (e) {
-        // Trailing comma 제거 시도 (가끔 AI가 마지막에 콤마를 남김)
         text = text.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
         rankingData = JSON.parse(text);
     }

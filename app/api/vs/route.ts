@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { model, cleanGeminiJson } from '@/lib/gemini';
 import { checkDailyLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
+import { verifyTurnstileToken, validateInput, SYSTEM_GUARD_PROMPT } from '@/lib/security';
 
 export async function POST(req: Request) {
   const headersList = await headers();
@@ -17,18 +18,29 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { productA, productB, query } = await req.json();
+    const { productA, productB, query, turnstileToken } = await req.json();
+    
+    const isHuman = await verifyTurnstileToken(turnstileToken);
+    if (!isHuman) {
+      return NextResponse.json({ error: "보안 검증에 실패했습니다." }, { status: 403 });
+    }
+
     const now = new Date();
     const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
 
     if (productA && productB) {
-      if (productA.trim().length < 1 || productB.trim().length < 1) {
+      const safeA = validateInput(productA);
+      const safeB = validateInput(productB);
+
+      if (safeA.trim().length < 1 || safeB.trim().length < 1) {
         return NextResponse.json({ error: "제품명을 입력해주세요." }, { status: 400 });
       }
 
       const prompt = `
-        **${today}** 기준, 두 제품 '${productA}'와 '${productB}'를 비교 분석해주세요.
+        **${today}** 기준, 두 제품 '${safeA}'와 '${safeB}'를 비교 분석해주세요.
         Google 검색을 통해 **${today} 현재**의 최신 스펙과 가격을 확인하세요.
+
+        ${SYSTEM_GUARD_PROMPT}
 
         [예외 처리]
         1. 두 제품이 서로 다른 카테고리라 비교가 불가능한 경우 (예: 노트북 vs 냉장고, 아이폰 vs 바나나),
@@ -57,13 +69,17 @@ export async function POST(req: Request) {
     }
 
     if (query) {
-      if (query.trim().length < 2) {
+      const safeQuery = validateInput(query);
+
+      if (safeQuery.trim().length < 2) {
         return NextResponse.json({ error: "검색어를 2글자 이상 입력해주세요." }, { status: 400 });
       }
 
       const prompt = `
-        사용자 질문: "${query}"
+        사용자 질문: "${safeQuery}"
         당신은 IT 쇼핑 큐레이터입니다. **${today}** 기준 최신 정보를 바탕으로 제품을 추천하세요.
+
+        ${SYSTEM_GUARD_PROMPT}
 
         [예외 처리]
         질문이 IT 기기, 가전제품 추천과 관련이 없다면 다음 JSON 반환:

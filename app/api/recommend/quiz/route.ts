@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { model, cleanGeminiJson } from '@/lib/gemini';
 import { checkDailyLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
+import { verifyTurnstileToken, validateInput, SYSTEM_GUARD_PROMPT } from '@/lib/security';
 
 export async function POST(req: Request) {
   const headersList = await headers();
@@ -18,17 +19,26 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { category, answers, query } = body;
+    const { category, answers, query, turnstileToken } = body;
+
+    const isHuman = await verifyTurnstileToken(turnstileToken);
+    if (!isHuman) {
+      return NextResponse.json({ error: "보안 검증에 실패했습니다." }, { status: 403 });
+    }
 
     const now = new Date();
     const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
 
     if (query) {
+       const safeQuery = validateInput(query);
+
        const prompt = `
-        사용자 입력: "${query}"
+        사용자 입력: "${safeQuery}"
         
         당신은 **${today}** 기준 IT 기기 및 가전제품 전문 쇼핑 큐레이터입니다.
         사용자의 입력이 IT 기기, 가전제품, 혹은 관련 액세서리 구매/추천과 관련이 있는지 엄격하게 판단하세요.
+
+        ${SYSTEM_GUARD_PROMPT}
 
         [판단 기준]
         1. IT/가전/전자제품 추천, 스펙 질문, 비교 등은 '관련 있음'으로 판단.
@@ -59,7 +69,7 @@ export async function POST(req: Request) {
        const responseText = result.response.text();
        const data = JSON.parse(cleanGeminiJson(responseText));
        
-       if (data.error === "IRRELEVANT") {
+       if (data.error === "IRRELEVANT" || data.error === "SECURITY_ALERT") {
          return NextResponse.json({ error: data.message }, { status: 400 });
        }
 
@@ -70,10 +80,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "데이터가 부족합니다." }, { status: 400 });
     }
 
+    const safeCategory = validateInput(category);
+
     const prompt = `
-      당신은 **${today}** 기준, '${category}' 분야의 최고 전문가(MD)입니다.
+      당신은 **${today}** 기준, '${safeCategory}' 분야의 최고 전문가(MD)입니다.
       사용자가 작성한 다음 설문 답변을 깊이 있게 분석하세요.
       
+      ${SYSTEM_GUARD_PROMPT}
+
       [사용자 답변 데이터]
       ${JSON.stringify(answers)}
 
@@ -101,6 +115,10 @@ export async function POST(req: Request) {
 
     const result = await model.generateContent(prompt);
     const data = JSON.parse(cleanGeminiJson(result.response.text()));
+
+    if (data.error === "SECURITY_ALERT") {
+      return NextResponse.json({ error: data.message }, { status: 400 });
+    }
 
     return NextResponse.json({ ...data, remaining });
 
