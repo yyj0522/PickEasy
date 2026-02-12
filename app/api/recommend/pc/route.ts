@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { model } from '@/lib/gemini';
+import { model } from '@/lib/gemini'; 
 import { checkDailyLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
 import { verifyTurnstileToken, validateInput, SYSTEM_GUARD_PROMPT } from '@/lib/security';
@@ -62,24 +62,26 @@ export async function POST(req: Request) {
     }
 
     const systemPrompt = `
-      당신은 **${today}** 기준 최신 PC 견적 전문가입니다.
+      당신은 **${today}** 기준 최신 조립 PC 견적 전문가입니다.
       
-      **[중요 시장 상황]**
-      현재 전 세계적인 반도체 이슈로 **메모리(RAM) 가격이 평소보다 약 3배 폭등**했습니다.
-      견적 구성 시 이 점을 고려하세요.
+      [부품 선정 규칙]
+      1. **RAM(메모리):** 반드시 **'삼성전자(Samsung)'** 또는 **'SK하이닉스'**의 **표준형 DDR5/DDR4 메모리(일명 시금치 램)**를 최우선으로 추천하세요. 
+         - 듣보잡 브랜드나 지나치게 화려한 튜닝 램은 제외하세요.
+         - 대중들이 가장 많이 쓰는 '국민 램'을 선택하세요.
+      2. 모든 부품은 현재 한국 시장에서 쉽게 구할 수 있는 대중적인 브랜드 위주로 구성하세요.
 
       ${SYSTEM_GUARD_PROMPT}
 
       [출력 형식 - JSON Only]
       **마크다운 없이 오직 JSON 문자열만 출력하세요.**
       {
-        "intro": "인사말",
+        "intro": "견적에 대한 전문가의 짧은 한줄 평 (가격 폭등 언급 금지)",
         "parts": [ 
           { "part": "CPU", "name": "...", "price": 0, "reason": "..." },
-          { "part": "메모리", "name": "...", "price": 0, "reason": "..." }
+          { "part": "메모리", "name": "삼성전자 DDR5-5600 (16GB)", "price": 0, "reason": "안정성과 호환성이 검증된 국민 메모리" }
         ],
         "total_price_estimate": 0,
-        "review": "..."
+        "review": "전체적인 구성에 대한 전문가 리뷰"
       }
     `;
 
@@ -87,8 +89,6 @@ export async function POST(req: Request) {
     let responseText = result.response.text();
     
     responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    console.log("[PC Raw AI Output]:", responseText);
 
     let data;
     try {
@@ -106,12 +106,13 @@ export async function POST(req: Request) {
             const isRam = /RAM|memory|메모리/i.test(part.part) || /RAM|memory|메모리/i.test(part.name);
             if (isRam) {
                 let price = typeof part.price === 'string' ? parseInt(part.price.replace(/[^0-9]/g, ''), 10) : part.price;
+                
                 const inflatedPrice = Math.round(price * 3);
-                console.log(`💸 [Price Surge] ${part.name}: ${price} -> ${inflatedPrice}`);
+                
                 return { 
                     ...part, 
                     price: inflatedPrice,
-                    reason: `${part.reason} (메모리 품귀로 가격 3배 폭등 반영)`
+                    reason: part.reason 
                 };
             }
             return part;
@@ -122,7 +123,6 @@ export async function POST(req: Request) {
             return sum + (price || 0);
         }, 0);
         data.total_price_estimate = newTotal;
-        data.intro += " (⚠️ 현재 메모리 가격 폭등이 반영된 견적입니다.)";
     }
 
     if (type === 'initial') {

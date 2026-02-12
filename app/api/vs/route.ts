@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     const safeB = validateInput(productB);
 
     const prompt = `
-      **${today}** 기준, '${safeA}'와 '${safeB}'를 사용자의 선택에 도움이 될 수 있도록 상세하게 비교 분석해주세요.
+      **${today}** 기준, '${safeA}'와 '${safeB}'를 비교 분석해주세요.
       
       ${SYSTEM_GUARD_PROMPT}
 
@@ -45,14 +45,17 @@ export async function POST(req: Request) {
       - 정보 없음: { "error": "NOT_FOUND", "message": "제품 정보를 찾을 수 없습니다." }
 
       [출력 형식 - JSON Only]
-      **마크다운 없이 오직 JSON 문자열만 출력하세요.**
+      **절대 마크다운 코드 블록(\`\`\`json)을 사용하지 마세요. 오직 순수한 JSON 문자열만 출력하세요.**
       {
-        "productA_name": "모델명A",
-        "productB_name": "모델명B",
+        "productA_name": "모델명A (풀네임)",
+        "productB_name": "모델명B (풀네임)",
         "specs": [
-          { "category": "항목", "specA": "값", "specB": "값", "winner": "A 또는 B" }
+          { "category": "가격(약)", "specA": "00만원", "specB": "00만원", "winner": "A" },
+          { "category": "CPU/성능", "specA": "...", "specB": "...", "winner": "B" },
+          { "category": "디스플레이/크기", "specA": "...", "specB": "...", "winner": "Draw" },
+          { "category": "무게/휴대성", "specA": "...", "specB": "...", "winner": "A" }
         ],
-        "final_verdict": "결론"
+        "final_verdict": "최종 결론 한 줄 요약"
       }
     `;
 
@@ -68,7 +71,7 @@ export async function POST(req: Request) {
       data = JSON.parse(responseText);
     } catch (e) {
       console.error("❌ JSON Parsing Failed. Raw:", responseText);
-      return NextResponse.json({ error: "분석 결과를 처리하지 못했습니다." }, { status: 500 });
+      return NextResponse.json({ error: "AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요." }, { status: 500 });
     }
 
     if (data.error) return NextResponse.json({ error: data.message }, { status: 400 });
