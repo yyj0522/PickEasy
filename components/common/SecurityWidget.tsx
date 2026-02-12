@@ -70,3 +70,4 @@ const SecurityWidget = forwardRef(({ onVerify }: Props, ref) => {
 
 SecurityWidget.displayName = "SecurityWidget";
 export default SecurityWidget;
+// Vercel 환경변수 갱신을 위한 강제 재배포 트리거
