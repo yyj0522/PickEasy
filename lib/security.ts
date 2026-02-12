@@ -3,6 +3,7 @@ import { z } from 'zod';
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 export async function verifyTurnstileToken(token: string): Promise<boolean> {
+  // 1. 토큰 수신 확인
   console.log(`🔍 [Server Debug] Token Received: ${token ? "YES (Length: " + token.length + ")" : "NO (NULL)"}`);
 
   if (!token) {
@@ -10,22 +11,28 @@ export async function verifyTurnstileToken(token: string): Promise<boolean> {
     return false;
   }
 
+  // 2. 시크릿 키 확인 (공백 제거)
   const secretKey = process.env.TURNSTILE_SECRET_KEY ? process.env.TURNSTILE_SECRET_KEY.trim() : "";
-  console.log(`🔍 [Server Debug] Secret Key Loaded: ${secretKey ? "YES (Starts with: " + secretKey.substring(0, 4) + "...)" : "NO (UNDEFINED)"}`);
-
+  
   if (!secretKey) {
     console.error("❌ [Turnstile Error] TURNSTILE_SECRET_KEY is missing in environment variables.");
     return false;
   }
 
+  // 앞 4자리만 로그로 출력해서 키가 제대로 들어갔는지 확인 (보안 유지)
+  console.log(`🔍 [Server Debug] Secret Key Start: ${secretKey.substring(0, 4)}...`);
+
   try {
+    // [변경점] JSON 대신 URLSearchParams(FormData) 사용 - 호환성 강화
+    const formData = new URLSearchParams();
+    formData.append('secret', secretKey);
+    formData.append('response', token);
+
     const res = await fetch(TURNSTILE_VERIFY_URL, {
       method: 'POST',
-      body: JSON.stringify({
-        secret: secretKey,
-        response: token,
-      }),
-      headers: { 'Content-Type': 'application/json' },
+      body: formData,
+      // headers: FormData는 Content-Type을 자동으로 설정하므로 생략하거나, 
+      // 명시적으로 application/x-www-form-urlencoded 사용
     });
 
     const data = await res.json();
