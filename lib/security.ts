@@ -3,8 +3,18 @@ import { z } from 'zod';
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 export async function verifyTurnstileToken(token: string): Promise<boolean> {
+  console.log(`🔍 [Server Debug] Token Received: ${token ? "YES (Length: " + token.length + ")" : "NO (NULL)"}`);
+
   if (!token) {
-    console.error("❌ [Turnstile Error] 클라이언트에서 토큰이 넘어오지 않았습니다.");
+    console.error("❌ [Turnstile Error] Token is missing from client request.");
+    return false;
+  }
+
+  const secretKey = process.env.TURNSTILE_SECRET_KEY ? process.env.TURNSTILE_SECRET_KEY.trim() : "";
+  console.log(`🔍 [Server Debug] Secret Key Loaded: ${secretKey ? "YES (Starts with: " + secretKey.substring(0, 4) + "...)" : "NO (UNDEFINED)"}`);
+
+  if (!secretKey) {
+    console.error("❌ [Turnstile Error] TURNSTILE_SECRET_KEY is missing in environment variables.");
     return false;
   }
 
@@ -12,7 +22,7 @@ export async function verifyTurnstileToken(token: string): Promise<boolean> {
     const res = await fetch(TURNSTILE_VERIFY_URL, {
       method: 'POST',
       body: JSON.stringify({
-        secret: process.env.TURNSTILE_SECRET_KEY,
+        secret: secretKey,
         response: token,
       }),
       headers: { 'Content-Type': 'application/json' },
@@ -20,14 +30,17 @@ export async function verifyTurnstileToken(token: string): Promise<boolean> {
 
     const data = await res.json();
 
+    console.log("🔍 [Server Debug] Cloudflare Raw Response:", JSON.stringify(data));
+
     if (!data.success) {
-      console.error("❌ [Turnstile Verify Failed] Cloudflare 응답:", JSON.stringify(data));
+      console.error("❌ [Turnstile Verify Failed] Error Codes:", data['error-codes']);
       return false;
     }
 
-    return data.success;
+    console.log("✅ [Server Debug] Verification Successful!");
+    return true;
   } catch (error) {
-    console.error('❌ [Turnstile Verify Error] Fetch 통신 실패:', error);
+    console.error('❌ [Turnstile Verify Error] Fetch failed:', error);
     return false;
   }
 }

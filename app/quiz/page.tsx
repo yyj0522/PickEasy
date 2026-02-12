@@ -88,7 +88,6 @@ const MOBILE_BANNERS: Banner[] = [
 
 const CATEGORIES = [
   { id: 'laptop', name: '노트북', icon: Laptop },
-  { id: 'desktop', name: '데스크탑', icon: Cpu },
   { id: 'monitor', name: '모니터', icon: Monitor },
   { id: 'tablet', name: '태블릿', icon: Tablet },
   { id: 'mouse', name: '마우스', icon: Mouse },

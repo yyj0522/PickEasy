@@ -89,7 +89,6 @@ const MOBILE_BANNERS: Banner[] = [
 
 const TABS = [
   { slug: 'laptop', name: '노트북' },
-  { slug: 'desktop', name: '데스크탑' },
   { slug: 'monitor', name: '모니터' },
   { slug: 'tablet', name: '태블릿' },
   { slug: 'mouse', name: '마우스' },
