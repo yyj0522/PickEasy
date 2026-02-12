@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Swords, Trophy, Loader2, ArrowRightLeft, AlertTriangle } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
-import SecurityWidget from '@/components/common/SecurityWidget';
+import SecurityModal from '@/components/common/SecurityModal';
 
 type Banner = {
   id: string;
@@ -83,8 +83,8 @@ export default function VSPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [turnstileToken, setTurnstileToken] = useState<string>('');
-  const widgetRef = useRef<any>(null);
+  
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
 
   const [inputs, setInputs] = useState({
     a: '',
@@ -99,10 +99,14 @@ export default function VSPage() {
     setRandomMobile(MOBILE_BANNERS[Math.floor(Math.random() * MOBILE_BANNERS.length)]);
   }, []);
 
-  const handleCompare = async () => {
+  const handleStartCompare = () => {
     if (!inputs.a || !inputs.b) return alert("두 제품명을 모두 입력해주세요!");
-    if (!turnstileToken) return alert("보안 확인 중입니다. 잠시만 기다려주세요.");
-    
+    setIsSecurityOpen(true);
+  };
+
+  const handleVerified = async (token: string) => {
+    if (!token) return;
+    setIsSecurityOpen(false);
     setLoading(true);
     setResult(null);
     setErrorMsg(null);
@@ -114,15 +118,13 @@ export default function VSPage() {
         body: JSON.stringify({ 
           productA: inputs.a, 
           productB: inputs.b,
-          turnstileToken
+          turnstileToken: token
         }),
       });
       
       const data = await res.json();
       
       if (!res.ok) {
-        setTurnstileToken('');
-        widgetRef.current?.reset();
         throw new Error(data.error || "비교 분석 중 오류가 발생했습니다.");
       }
       
@@ -136,6 +138,12 @@ export default function VSPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      <SecurityModal 
+        isOpen={isSecurityOpen} 
+        onClose={() => setIsSecurityOpen(false)} 
+        onVerify={handleVerified} 
+      />
+
       <div className="flex-1 max-w-4xl mx-auto px-4 pt-12 w-full flex flex-col pb-0">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black mb-3 flex items-center justify-center gap-2 text-slate-900">
@@ -157,7 +165,7 @@ export default function VSPage() {
               className="w-full p-4 bg-blue-50/50 border border-blue-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-lg font-bold text-center placeholder:font-normal placeholder:text-blue-300 transition text-slate-800"
               value={inputs.a}
               onChange={(e) => setInputs({...inputs, a: e.target.value})}
-              onKeyDown={(e) => e.key === 'Enter' && handleCompare()}
+              onKeyDown={(e) => e.key === 'Enter' && handleStartCompare()}
             />
           </div>
 
@@ -174,15 +182,13 @@ export default function VSPage() {
               className="w-full p-4 bg-red-50/50 border border-red-100 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-lg font-bold text-center placeholder:font-normal placeholder:text-red-300 transition text-slate-800"
               value={inputs.b}
               onChange={(e) => setInputs({...inputs, b: e.target.value})}
-              onKeyDown={(e) => e.key === 'Enter' && handleCompare()}
+              onKeyDown={(e) => e.key === 'Enter' && handleStartCompare()}
             />
           </div>
         </div>
 
-        <SecurityWidget ref={widgetRef} onVerify={setTurnstileToken} />
-
         <button 
-          onClick={handleCompare}
+          onClick={handleStartCompare}
           disabled={loading}
           className="w-full py-5 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-black transition-all hover:shadow-lg hover:-translate-y-1 disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2 mb-8"
         >

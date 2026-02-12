@@ -6,7 +6,7 @@ import { toPng } from 'html-to-image';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';
-import SecurityWidget from '@/components/common/SecurityWidget';
+import SecurityModal from '@/components/common/SecurityModal';
 
 type Banner = {
   id: string;
@@ -86,16 +86,16 @@ export default function PCBuilderPage() {
   const [result, setResult] = useState<any>(null);
   const [isRefined, setIsRefined] = useState(false);
   const [refinementRequest, setRefinementRequest] = useState('');
-  const [turnstileToken, setTurnstileToken] = useState<string>('');
-  const widgetRef = useRef<any>(null);
   
   const [randomDesktop, setRandomDesktop] = useState<Banner | null>(null);
   const [randomMobile, setRandomMobile] = useState<Banner | null>(null);
   
   const resultRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
-
   const [currentDateStr, setCurrentDateStr] = useState('');
+
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
+  const [actionType, setActionType] = useState<'create' | 'refine' | null>(null);
 
   const [input, setInput] = useState({
     budget: '',
@@ -111,70 +111,61 @@ export default function PCBuilderPage() {
     setCurrentDateStr(`${now.getFullYear()}년 ${now.getMonth() + 1}월`);
   }, []);
 
-  const handleSubmit = async () => {
+  const handleStartCreate = () => {
     if (!input.budget || !input.usage) return alert("예산과 용도를 입력해주세요!");
-    if (!turnstileToken) return alert("보안 확인 중입니다. 잠시만 기다려주세요.");
-    
-    setLoading(true);
-    setResult(null);
-    setIsRefined(false);
-
-    try {
-      const res = await fetch('/api/recommend/pc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'initial', ...input, turnstileToken }),
-      });
-      
-      const data = await res.json();
-
-      if (!res.ok) {
-        setTurnstileToken('');
-        widgetRef.current?.reset();
-        throw new Error(data.error || "견적 생성 중 오류가 발생했습니다.");
-      }
-
-      setResult(data);
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setLoading(false);
-    }
+    setActionType('create');
+    setIsSecurityOpen(true);
   };
 
-  const handleRefine = async () => {
+  const handleStartRefine = () => {
     if (!refinementRequest) return alert("수정할 내용을 입력해주세요!");
     if (isRefined) return alert("수정 요청은 1회만 가능합니다.");
-    if (!turnstileToken) return alert("보안 확인 중입니다. 잠시만 기다려주세요.");
+    setActionType('refine');
+    setIsSecurityOpen(true);
+  };
 
+  const handleVerified = async (token: string) => {
+    if (!token) return;
+    setIsSecurityOpen(false);
     setLoading(true);
 
     try {
-      const res = await fetch('/api/recommend/pc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          type: 'refine', 
-          previousResult: result, 
-          refinementRequest,
-          turnstileToken
-        }),
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        setTurnstileToken('');
-        widgetRef.current?.reset();
-        throw new Error(data.error || "수정 중 오류가 발생했습니다.");
+      if (actionType === 'create') {
+        setResult(null);
+        setIsRefined(false);
+
+        const res = await fetch('/api/recommend/pc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'initial', ...input, turnstileToken: token }),
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "견적 생성 중 오류가 발생했습니다.");
+        setResult(data);
+      } 
+      else if (actionType === 'refine') {
+        const res = await fetch('/api/recommend/pc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            type: 'refine', 
+            previousResult: result, 
+            refinementRequest,
+            turnstileToken: token
+          }),
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "수정 중 오류가 발생했습니다.");
+        setResult(data);
+        setIsRefined(true);
       }
-      
-      setResult(data);
-      setIsRefined(true);
     } catch (e: any) {
       alert(e.message);
     } finally {
       setLoading(false);
+      setActionType(null);
     }
   };
 
@@ -232,6 +223,12 @@ export default function PCBuilderPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      <SecurityModal 
+        isOpen={isSecurityOpen} 
+        onClose={() => setIsSecurityOpen(false)} 
+        onVerify={handleVerified} 
+      />
+
       <div className="flex-1 max-w-3xl mx-auto px-4 pt-12 w-full flex flex-col pb-0">
         
         <DesktopSideBanners />
@@ -283,10 +280,8 @@ export default function PCBuilderPage() {
               />
             </div>
 
-            <SecurityWidget ref={widgetRef} onVerify={setTurnstileToken} />
-
             <button 
-              onClick={handleSubmit}
+              onClick={handleStartCreate}
               disabled={loading}
               className="w-full py-5 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all hover:shadow-lg hover:-translate-y-1 disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-2 mt-4"
             >
@@ -388,7 +383,7 @@ export default function PCBuilderPage() {
 
             <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm">
               <h3 className="text-center font-bold text-slate-800 mb-1">
-                견적 부품을 찾으시나요?
+                🔎 견적 부품을 찾으시나요?
               </h3>
               <p className="text-center text-xs text-slate-400 mb-6">
                 혹은 다른 가전제품이 필요하신가요? 아래 쇼핑몰에서 바로 찾아보세요.
@@ -445,10 +440,10 @@ export default function PCBuilderPage() {
                     className="flex-1 p-3 bg-slate-700 border border-slate-600 rounded-xl focus:border-yellow-400 outline-none text-white placeholder:text-slate-400"
                     value={refinementRequest}
                     onChange={(e) => setRefinementRequest(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleRefine()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleStartRefine()}
                   />
                   <button 
-                    onClick={handleRefine}
+                    onClick={handleStartRefine}
                     disabled={loading}
                     className="bg-yellow-400 text-slate-900 px-6 rounded-xl font-black hover:bg-yellow-300 transition disabled:opacity-50 whitespace-nowrap"
                   >

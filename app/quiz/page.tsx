@@ -11,7 +11,7 @@ import {
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';
-import SecurityWidget from '@/components/common/SecurityWidget';
+import SecurityModal from '@/components/common/SecurityModal';
 
 type Banner = {
   id: string;
@@ -336,8 +336,6 @@ function QuizContent() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentQIdx, setCurrentQIdx] = useState(0);
   const [result, setResult] = useState<any>(null);
-  const [turnstileToken, setTurnstileToken] = useState<string>('');
-  const widgetRef = useRef<any>(null);
   
   const searchParams = useSearchParams();
   const directQuery = searchParams.get('q');
@@ -346,17 +344,20 @@ function QuizContent() {
   const [randomDesktop, setRandomDesktop] = useState<Banner | null>(null);
   const [randomMobile, setRandomMobile] = useState<Banner | null>(null);
 
+  const [isSecurityOpen, setIsSecurityOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<{type: 'quiz' | 'search', data: any} | null>(null);
+
   useEffect(() => {
     setRandomDesktop(DESKTOP_BANNERS[Math.floor(Math.random() * DESKTOP_BANNERS.length)]);
     setRandomMobile(MOBILE_BANNERS[Math.floor(Math.random() * MOBILE_BANNERS.length)]);
   }, []);
 
   useEffect(() => {
-    if (directQuery && turnstileToken) {
-      setStep('loading');
-      submitDirectSearch(directQuery);
+    if (directQuery) {
+      setPendingPayload({ type: 'search', data: directQuery });
+      setIsSecurityOpen(true);
     }
-  }, [directQuery, turnstileToken]);
+  }, [directQuery]);
 
   const handleCategorySelect = (cat: string) => {
     setCategory(cat);
@@ -375,15 +376,23 @@ function QuizContent() {
     if (currentQIdx < questions.length - 1) {
       setCurrentQIdx(prev => prev + 1);
     } else {
-      if (!turnstileToken) {
-        alert("보안 확인 중입니다. 잠시만 기다려주세요.");
-        return;
-      }
-      submitQuiz(newAnswers);
+      setPendingPayload({ type: 'quiz', data: newAnswers });
+      setIsSecurityOpen(true);
     }
   };
 
-  const submitQuiz = async (finalAnswers: any) => {
+  const handleVerified = async (token: string) => {
+    if (!token) return;
+    setIsSecurityOpen(false);
+
+    if (pendingPayload?.type === 'quiz') {
+      submitQuiz(pendingPayload.data, token);
+    } else if (pendingPayload?.type === 'search') {
+      submitDirectSearch(pendingPayload.data, token);
+    }
+  };
+
+  const submitQuiz = async (finalAnswers: any, token: string) => {
     setStep('loading');
     const selectedCategory = CATEGORIES.find(c => c.id === category);
     const categoryName = selectedCategory ? selectedCategory.name : category;
@@ -392,14 +401,12 @@ function QuizContent() {
       const res = await fetch('/api/recommend/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: categoryName, answers: finalAnswers, turnstileToken }),
+        body: JSON.stringify({ category: categoryName, answers: finalAnswers, turnstileToken: token }),
       });
       const data = await res.json();
       
       if (!res.ok) {
         alert(data.error);
-        setTurnstileToken('');
-        widgetRef.current?.reset();
         setStep('category');
         return;
       }
@@ -412,19 +419,18 @@ function QuizContent() {
     }
   };
 
-  const submitDirectSearch = async (queryText: string) => {
+  const submitDirectSearch = async (queryText: string, token: string) => {
+    setStep('loading');
     try {
       const res = await fetch('/api/recommend/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: queryText, turnstileToken }), 
+        body: JSON.stringify({ query: queryText, turnstileToken: token }), 
       });
       const data = await res.json();
 
       if (!res.ok) {
         alert(data.error);
-        setTurnstileToken('');
-        widgetRef.current?.reset();
         router.push('/quiz');
         setStep('category');
         return;
@@ -440,6 +446,11 @@ function QuizContent() {
 
   return (
     <div className="flex-1 flex flex-col justify-start max-w-4xl mx-auto px-4 pt-12 pb-4 md:py-12 w-full relative min-h-[800px]">
+      <SecurityModal 
+        isOpen={isSecurityOpen} 
+        onClose={() => setIsSecurityOpen(false)} 
+        onVerify={handleVerified} 
+      />
       
       <DesktopSideBanners />
 
@@ -448,10 +459,6 @@ function QuizContent() {
           <div className="text-center">
             <h1 className="text-3xl font-black mb-3 text-slate-900">무엇을 찾고 계신가요?</h1>
             <p className="text-slate-500 font-medium">카테고리를 선택하면 AI가 맞춤형 질문을 시작합니다.</p>
-          </div>
-
-          <div className="flex justify-center mb-4">
-             <SecurityWidget ref={widgetRef} onVerify={setTurnstileToken} />
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
