@@ -26,14 +26,11 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { type, budget, usage, previousResult, refinementRequest, turnstileToken } = body;
-    
-    // [보안 1] Turnstile 봇 검사
     const isHuman = await verifyTurnstileToken(turnstileToken);
     if (!isHuman) {
       return NextResponse.json({ error: "보안 검증에 실패했습니다. (봇 의심)" }, { status: 403 });
     }
 
-    // [보안 2] 입력값 검증 (Zod & Slice)
     const safeBudget = validateInput(budget || '');
     const safeUsage = validateInput(usage || '');
     const safeRefinement = validateInput(refinementRequest || '');
@@ -66,10 +63,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "입력 내용이 부족합니다." }, { status: 400 });
     }
 
-    // [보안 3] 방어 프롬프트 추가
     const systemPrompt = `
       당신은 **${today}** 기준 최신 IT 하드웨어 견적 전문가입니다.
       Google 검색 도구를 사용하여 **${today} 현재** 판매 중인 부품의 가격과 성능 정보를 바탕으로 답변하세요.
+
+      **[중요 시장 상황]**
+      현재 전 세계적인 반도체 이슈로 **메모리(RAM) 가격이 평소보다 약 2~3배 폭등**했습니다.
+      견적 구성 시 이 점을 고려하여 부품을 선택하세요.
 
       ${SYSTEM_GUARD_PROMPT}
 
@@ -82,7 +82,8 @@ export async function POST(req: Request) {
       {
         "intro": "...",
         "parts": [ 
-          { "part": "CPU", "name": "...", "price": 0, "reason": "..." }
+          { "part": "CPU", "name": "...", "price": 0, "reason": "..." },
+          { "part": "메모리", "name": "...", "price": 0, "reason": "..." }
         ],
         "total_price_estimate": 1500000,
         "review": "..."
@@ -90,12 +91,13 @@ export async function POST(req: Request) {
     `;
 
     const result = await model.generateContent(`${systemPrompt}\n\n${userPrompt}`);
-    const responseText = result.response.text();
-    const jsonString = cleanGeminiJson(responseText); 
+    let responseText = result.response.text();
     
+    responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+
     let data;
     try {
-      data = JSON.parse(jsonString);
+      data = JSON.parse(cleanGeminiJson(responseText));
     } catch (e) {
       console.error("JSON Parsing Failed. Raw text:", responseText);
       throw new Error("AI 응답을 분석하는 데 실패했습니다.");
@@ -103,6 +105,34 @@ export async function POST(req: Request) {
 
     if (data.error === "SECURITY_ALERT" || data.error === "IT_IRRELEVANT") {
       return NextResponse.json({ error: data.message }, { status: 400 });
+    }
+
+    if (data.parts && Array.isArray(data.parts)) {
+        let newTotal = 0;
+        
+        data.parts = data.parts.map((part: any) => {
+            const isRam = /RAM|memory|메모리/i.test(part.part) || /RAM|memory|메모리/i.test(part.name);
+            
+            if (isRam) {
+                let price = typeof part.price === 'string' ? parseInt(part.price.replace(/[^0-9]/g, ''), 10) : part.price;
+                const inflatedPrice = Math.round(price * 2.5);
+                
+                return { 
+                    ...part, 
+                    price: inflatedPrice,
+                    reason: `${part.reason} (현재 메모리 품귀 현상으로 가격 폭등 반영)`
+                };
+            }
+            return part;
+        });
+
+        newTotal = data.parts.reduce((sum: number, part: any) => {
+            let price = typeof part.price === 'string' ? parseInt(part.price.replace(/[^0-9]/g, ''), 10) : part.price;
+            return sum + (price || 0);
+        }, 0);
+
+        data.total_price_estimate = newTotal;
+        data.intro += " (⚠️ 현재 메모리 가격 폭등이 반영된 견적입니다.)";
     }
 
     if (type === 'initial') {
