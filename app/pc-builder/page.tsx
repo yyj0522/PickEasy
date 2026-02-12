@@ -235,7 +235,6 @@ export default function PCBuilderPage() {
 
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black mb-3 flex items-center justify-center gap-2 text-slate-900">
-            <Calculator className="w-8 h-8 text-indigo-600" />
             AI 조립 PC 견적
           </h1>
           <p className="text-slate-500 font-medium">

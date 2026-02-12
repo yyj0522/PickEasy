@@ -159,7 +159,6 @@ export default function RankPage() {
 
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black flex items-center justify-center gap-2 mb-3 text-slate-900">
-            <TrendingUp className="text-blue-600 w-8 h-8" />
             이달의 트렌드 랭킹
           </h1>
           <p className="text-slate-500 font-medium">
