@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Swords, Trophy, Loader2, ArrowRightLeft, AlertTriangle } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
@@ -84,6 +84,7 @@ export default function VSPage() {
   const [result, setResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const widgetRef = useRef<any>(null);
 
   const [inputs, setInputs] = useState({
     a: '',
@@ -120,6 +121,8 @@ export default function VSPage() {
       const data = await res.json();
       
       if (!res.ok) {
+        setTurnstileToken('');
+        widgetRef.current?.reset();
         throw new Error(data.error || "비교 분석 중 오류가 발생했습니다.");
       }
       
@@ -176,7 +179,7 @@ export default function VSPage() {
           </div>
         </div>
 
-        <SecurityWidget onVerify={setTurnstileToken} />
+        <SecurityWidget ref={widgetRef} onVerify={setTurnstileToken} />
 
         <button 
           onClick={handleCompare}
@@ -256,14 +259,12 @@ export default function VSPage() {
                   <a target="_blank" href="/api/ad?id=grid_himart" rel="noopener noreferrer nofollow">
                     <img src="https://img.linkprice.com/files/glink/himart/20260129/697b25135c355_120x60.png" width="120" height="60" alt="하이마트" style={{ border: 0 }} />
                   </a>
-                  <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=nyIP&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
 
                 <div className="hover:opacity-80 transition-opacity">
                   <a target="_blank" href="/api/ad?id=grid_gmarket" rel="noopener noreferrer nofollow">
                     <img src="https://img.linkprice.com/files/glink/gmarket/20191120/5dd48d65a8c5e_120_60.jpg" width="120" height="60" alt="G마켓" style={{ border: 0 }} />
                   </a>
-                  <img src="https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=1638&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
 
                 <div className="hover:opacity-80 transition-opacity">
@@ -276,7 +277,6 @@ export default function VSPage() {
                   <a target="_blank" href="/api/ad?id=grid_aliexpress" rel="noopener noreferrer nofollow">
                     <img src="https://img.linkprice.com/files/glink/aliexpress/20240328/600GgnC4eLAW0_120_60.png" width="120" height="60" alt="알리익스프레스" style={{ border: 0 }} />
                   </a>
-                  <img src="https://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=Cq7c&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
               </div>
               

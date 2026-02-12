@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect, Suspense } from 'react'; 
+import { useState, useEffect, Suspense, useRef } from 'react'; 
 import { useSearchParams, useRouter } from 'next/navigation'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Laptop, Monitor, Mouse, Keyboard, Tablet, Headphones, Watch, Camera, 
   Wind, Shirt, Waves, Snowflake, Refrigerator, Zap, Armchair, ChevronRight, 
-  Loader2, Tv, Fan, Speaker, Cpu
+  Loader2, Tv, Fan, Speaker, Cpu, Search
 } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';
+import SecurityWidget from '@/components/common/SecurityWidget';
 
 type Banner = {
   id: string;
@@ -87,6 +88,7 @@ const MOBILE_BANNERS: Banner[] = [
 
 const CATEGORIES = [
   { id: 'laptop', name: '노트북', icon: Laptop },
+  { id: 'desktop', name: '데스크탑', icon: Cpu },
   { id: 'monitor', name: '모니터', icon: Monitor },
   { id: 'tablet', name: '태블릿', icon: Tablet },
   { id: 'mouse', name: '마우스', icon: Mouse },
@@ -334,6 +336,9 @@ function QuizContent() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentQIdx, setCurrentQIdx] = useState(0);
   const [result, setResult] = useState<any>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const widgetRef = useRef<any>(null);
+  
   const searchParams = useSearchParams();
   const directQuery = searchParams.get('q');
   const router = useRouter();
@@ -347,11 +352,11 @@ function QuizContent() {
   }, []);
 
   useEffect(() => {
-    if (directQuery) {
+    if (directQuery && turnstileToken) {
       setStep('loading');
       submitDirectSearch(directQuery);
     }
-  }, [directQuery]);
+  }, [directQuery, turnstileToken]);
 
   const handleCategorySelect = (cat: string) => {
     setCategory(cat);
@@ -370,13 +375,16 @@ function QuizContent() {
     if (currentQIdx < questions.length - 1) {
       setCurrentQIdx(prev => prev + 1);
     } else {
+      if (!turnstileToken) {
+        alert("보안 확인 중입니다. 잠시만 기다려주세요.");
+        return;
+      }
       submitQuiz(newAnswers);
     }
   };
 
   const submitQuiz = async (finalAnswers: any) => {
     setStep('loading');
-    
     const selectedCategory = CATEGORIES.find(c => c.id === category);
     const categoryName = selectedCategory ? selectedCategory.name : category;
 
@@ -384,12 +392,14 @@ function QuizContent() {
       const res = await fetch('/api/recommend/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: categoryName, answers: finalAnswers }),
+        body: JSON.stringify({ category: categoryName, answers: finalAnswers, turnstileToken }),
       });
       const data = await res.json();
       
-      if (data.error) {
+      if (!res.ok) {
         alert(data.error);
+        setTurnstileToken('');
+        widgetRef.current?.reset();
         setStep('category');
         return;
       }
@@ -402,17 +412,19 @@ function QuizContent() {
     }
   };
 
-  const submitDirectSearch = async (query: string) => {
+  const submitDirectSearch = async (queryText: string) => {
     try {
       const res = await fetch('/api/recommend/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }), 
+        body: JSON.stringify({ query: queryText, turnstileToken }), 
       });
       const data = await res.json();
 
-      if (data.error) {
+      if (!res.ok) {
         alert(data.error);
+        setTurnstileToken('');
+        widgetRef.current?.reset();
         router.push('/quiz');
         setStep('category');
         return;
@@ -436,6 +448,10 @@ function QuizContent() {
           <div className="text-center">
             <h1 className="text-3xl font-black mb-3 text-slate-900">무엇을 찾고 계신가요?</h1>
             <p className="text-slate-500 font-medium">카테고리를 선택하면 AI가 맞춤형 질문을 시작합니다.</p>
+          </div>
+
+          <div className="flex justify-center mb-4">
+             <SecurityWidget ref={widgetRef} onVerify={setTurnstileToken} />
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -565,14 +581,12 @@ function QuizContent() {
                   <a target="_blank" href="/api/ad?id=grid_himart" rel="noopener noreferrer nofollow">
                     <img src="https://img.linkprice.com/files/glink/himart/20260129/697b25135c355_120x60.png" width="120" height="60" alt="하이마트" style={{ border: 0 }} />
                   </a>
-                  <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=nyIP&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
 
                 <div className="hover:opacity-80 transition-opacity">
                   <a target="_blank" href="/api/ad?id=grid_gmarket" rel="noopener noreferrer nofollow">
                     <img src="https://img.linkprice.com/files/glink/gmarket/20191120/5dd48d65a8c5e_120_60.jpg" width="120" height="60" alt="G마켓" style={{ border: 0 }} />
                   </a>
-                  <img src="https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=1638&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
 
                 <div className="hover:opacity-80 transition-opacity">
@@ -585,7 +599,6 @@ function QuizContent() {
                   <a target="_blank" href="/api/ad?id=grid_aliexpress" rel="noopener noreferrer nofollow">
                     <img src="https://img.linkprice.com/files/glink/aliexpress/20240328/600GgnC4eLAW0_120_60.png" width="120" height="60" alt="알리익스프레스" style={{ border: 0 }} />
                   </a>
-                  <img src="https://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=Cq7c&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
                 </div>
               </div>
               

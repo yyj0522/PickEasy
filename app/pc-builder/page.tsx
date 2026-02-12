@@ -86,6 +86,8 @@ export default function PCBuilderPage() {
   const [result, setResult] = useState<any>(null);
   const [isRefined, setIsRefined] = useState(false);
   const [refinementRequest, setRefinementRequest] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const widgetRef = useRef<any>(null);
   
   const [randomDesktop, setRandomDesktop] = useState<Banner | null>(null);
   const [randomMobile, setRandomMobile] = useState<Banner | null>(null);
@@ -94,7 +96,6 @@ export default function PCBuilderPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const [currentDateStr, setCurrentDateStr] = useState('');
-  const [turnstileToken, setTurnstileToken] = useState<string>('');
 
   const [input, setInput] = useState({
     budget: '',
@@ -128,6 +129,8 @@ export default function PCBuilderPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        setTurnstileToken('');
+        widgetRef.current?.reset();
         throw new Error(data.error || "견적 생성 중 오류가 발생했습니다.");
       }
 
@@ -160,7 +163,11 @@ export default function PCBuilderPage() {
       
       const data = await res.json();
       
-      if (!res.ok) throw new Error(data.error || "수정 중 오류가 발생했습니다.");
+      if (!res.ok) {
+        setTurnstileToken('');
+        widgetRef.current?.reset();
+        throw new Error(data.error || "수정 중 오류가 발생했습니다.");
+      }
       
       setResult(data);
       setIsRefined(true);
@@ -276,7 +283,7 @@ export default function PCBuilderPage() {
               />
             </div>
 
-            <SecurityWidget onVerify={setTurnstileToken} />
+            <SecurityWidget ref={widgetRef} onVerify={setTurnstileToken} />
 
             <button 
               onClick={handleSubmit}
@@ -469,7 +476,7 @@ export default function PCBuilderPage() {
                   alt={randomDesktop.alt} 
                   width={randomDesktop.width} 
                   height={randomDesktop.height} 
-                  className="max-w-full h-auto rounded-lg"
+                  className="max-w-full h-auto"
                   {...(randomDesktop.isCoupang && { referrerPolicy: 'unsafe-url' })}
                 />
                 {randomDesktop.trackingSrc && (
@@ -487,7 +494,7 @@ export default function PCBuilderPage() {
                   alt={randomMobile.alt} 
                   width={randomMobile.width} 
                   height={randomMobile.height} 
-                  className="max-w-full h-auto rounded-lg"
+                  className="max-w-full h-auto"
                 />
                 {randomMobile.trackingSrc && (
                    <img src={randomMobile.trackingSrc} width="1" height="1" alt="" style={{ display: 'none' }} />
