@@ -383,7 +383,7 @@ export default function PCBuilderPage() {
 
             <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm">
               <h3 className="text-center font-bold text-slate-800 mb-1">
-                🔎 견적 부품을 찾으시나요?
+                견적 부품을 찾으시나요?
               </h3>
               <p className="text-center text-xs text-slate-400 mb-6">
                 혹은 다른 가전제품이 필요하신가요? 아래 쇼핑몰에서 바로 찾아보세요.
