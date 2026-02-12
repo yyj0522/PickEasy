@@ -20,7 +20,7 @@ const SecurityWidget = forwardRef(({ onVerify }: Props, ref) => {
     reset: () => {
       if (window.turnstile && widgetIdRef.current) {
         window.turnstile.reset(widgetIdRef.current);
-        onVerify('');
+        onVerify(''); // 토큰 초기화
       }
     }
   }));
@@ -34,9 +34,17 @@ const SecurityWidget = forwardRef(({ onVerify }: Props, ref) => {
 
     script.onload = () => {
       if (window.turnstile && containerRef.current) {
+        // [중요] 환경변수 뒤에 붙은 공백/줄바꿈 제거 (.trim())
+        const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim();
+
+        if (!siteKey) {
+          console.error("Turnstile Site Key가 없습니다.");
+          return;
+        }
+
         try {
           widgetIdRef.current = window.turnstile.render(containerRef.current, {
-            sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+            sitekey: siteKey, 
             callback: (token: string) => {
               onVerify(token);
             },
