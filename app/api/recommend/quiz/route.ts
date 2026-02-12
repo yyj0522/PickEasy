@@ -56,12 +56,13 @@ export async function POST(req: Request) {
           "recommendations": [
             {
               "name": "브랜드 + 정확한 모델명 (풀네임)",
-              "price_estimate": "약 00만원",
+              "price_estimate": "1500000", 
               "reason": "추천 이유 및 특징 (간결하게)",
               "tags": ["키워드1", "키워드2"]
             }
           ]
         }
+        **주의: price_estimate에는 '약', '원', ',' 등을 제외하고 오직 숫자만 넣으세요.**
        `;
     } else if (category && answers) {
        const safeCategory = validateInput(category);
@@ -76,13 +77,10 @@ export async function POST(req: Request) {
 
         [수행 작업]
         1. 사용자 성향 및 **예산 범위**를 정확히 파악하세요.
-        2. **반드시 사용자가 선택한 예산 범위 내에 들어오는 제품만 선정하세요.**
+        2. **반드시 사용자가 선택한 예산 범위 내에 들어오는 제품만 선정하세요.** (예: 50~200만원 예산이면 30만원짜리 저가형은 제외)
         3. Google 검색을 통해 **${today} 현재** 시장에서 가장 호평받는 제품 3개 선정.
         4. 단종된 모델은 제외하고, 지금 구매 가능한 최신 모델 위주로 추천하세요.
         
-        [출력 시 주의사항]
-        - 가격은 "최저가 약 200만원 이하원" 같이 애매하게 쓰지 말고, "**약 185만원**" 처럼 구체적인 숫자를 명시하세요.
-
         [출력 형식 - JSON Only]
         **마크다운 없이 오직 순수한 JSON 문자열만 출력하세요.**
         {
@@ -90,12 +88,13 @@ export async function POST(req: Request) {
           "recommendations": [
             {
               "name": "브랜드 + 정확한 모델명 (풀네임)",
-              "price_estimate": "약 00만원",
+              "price_estimate": "1500000",
               "reason": "이 사용자에게 딱 맞는 이유",
               "tags": ["특징1", "특징2"]
             }
           ]
         }
+        **주의: price_estimate에는 '약', '원', ',' 등을 제외하고 오직 숫자만 넣으세요.**
       `;
     } else {
       return NextResponse.json({ error: "데이터가 부족합니다." }, { status: 400 });

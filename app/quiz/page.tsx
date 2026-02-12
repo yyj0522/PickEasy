@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, Suspense} from 'react'; 
+import { useState, useEffect, Suspense, useRef } from 'react'; 
 import { useSearchParams, useRouter } from 'next/navigation'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Laptop, Monitor, Mouse, Keyboard, Tablet, Headphones, Watch, Camera, 
   Wind, Shirt, Waves, Snowflake, Refrigerator, Zap, Armchair, ChevronRight, 
-  Loader2, Tv, Fan, Speaker} from 'lucide-react';
+  Loader2, Tv, Fan, Speaker
+} from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';
@@ -554,7 +555,7 @@ function QuizContent() {
                     </div>
                     
                     <div className="text-base font-bold text-indigo-600 bg-indigo-50 inline-block px-3 py-1 rounded-lg self-start">
-                        최저가 약 {item.price_estimate?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") ?? 0}원
+                        최저가 약 {Number(item.price_estimate?.toString().replace(/[^0-9]/g, '') || 0).toLocaleString()}원
                     </div>
 
                     <p className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
