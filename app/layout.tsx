@@ -66,6 +66,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        <meta 
+          httpEquiv="Content-Security-Policy" 
+          content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://img.linkprice.com https://track.linkprice.com;" 
+        />
+      </head>
       <body className={inter.className}>
         <ClientLayout>
           {children}
