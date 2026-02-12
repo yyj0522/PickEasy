@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { model, cleanGeminiJson } from '@/lib/gemini';
+import { model } from '@/lib/gemini';
 import { checkDailyLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
 import { verifyTurnstileToken, validateInput, SYSTEM_GUARD_PROMPT } from '@/lib/security';
@@ -26,9 +26,10 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { type, budget, usage, previousResult, refinementRequest, turnstileToken } = body;
+    
     const isHuman = await verifyTurnstileToken(turnstileToken);
     if (!isHuman) {
-      return NextResponse.json({ error: "보안 검증에 실패했습니다. (봇 의심)" }, { status: 403 });
+      return NextResponse.json({ error: "보안 검증에 실패했습니다." }, { status: 403 });
     }
 
     const safeBudget = validateInput(budget || '');
@@ -54,38 +55,30 @@ export async function POST(req: Request) {
     const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
 
     let userPrompt = "";
-
     if (type === 'initial') {
       userPrompt = `사용자 요청: 예산 ${safeBudget}만원대로 ${safeUsage} 용도의 조립 PC 견적을 짜줘.`;
-    } else if (type === 'refine') {
-      userPrompt = `기존 견적: ${JSON.stringify(previousResult)}\n수정 요청: ${safeRefinement}`;
     } else {
-      return NextResponse.json({ error: "입력 내용이 부족합니다." }, { status: 400 });
+      userPrompt = `기존 견적: ${JSON.stringify(previousResult)}\n수정 요청: ${safeRefinement}`;
     }
 
     const systemPrompt = `
-      당신은 **${today}** 기준 최신 IT 하드웨어 견적 전문가입니다.
-      Google 검색 도구를 사용하여 **${today} 현재** 판매 중인 부품의 가격과 성능 정보를 바탕으로 답변하세요.
-
+      당신은 **${today}** 기준 최신 PC 견적 전문가입니다.
+      
       **[중요 시장 상황]**
-      현재 전 세계적인 반도체 이슈로 **메모리(RAM) 가격이 평소보다 약 2~3배 폭등**했습니다.
-      견적 구성 시 이 점을 고려하여 부품을 선택하세요.
+      현재 전 세계적인 반도체 이슈로 **메모리(RAM) 가격이 평소보다 약 3배 폭등**했습니다.
+      견적 구성 시 이 점을 고려하세요.
 
       ${SYSTEM_GUARD_PROMPT}
 
-      [필수 규칙]
-      1. **잡담 금지:** 인사말, 설명, 마크다운 헤더(##) 등을 일체 쓰지 마세요.
-      2. **오직 순수한 JSON 데이터만 출력하세요.**
-      3. 부품명은 풀네임, 가격은 숫자(KRW)로.
-
-      [출력 형식 - JSON]
+      [출력 형식 - JSON Only]
+      **마크다운 없이 오직 JSON 문자열만 출력하세요.**
       {
-        "intro": "...",
+        "intro": "인사말",
         "parts": [ 
           { "part": "CPU", "name": "...", "price": 0, "reason": "..." },
           { "part": "메모리", "name": "...", "price": 0, "reason": "..." }
         ],
-        "total_price_estimate": 1500000,
+        "total_price_estimate": 0,
         "review": "..."
       }
     `;
@@ -95,32 +88,30 @@ export async function POST(req: Request) {
     
     responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
 
+    console.log("[PC Raw AI Output]:", responseText);
+
     let data;
     try {
-      data = JSON.parse(cleanGeminiJson(responseText));
+      data = JSON.parse(responseText);
     } catch (e) {
-      console.error("JSON Parsing Failed. Raw text:", responseText);
-      throw new Error("AI 응답을 분석하는 데 실패했습니다.");
+      console.error("❌ JSON Parsing Failed. Raw:", responseText);
+      throw new Error("AI 응답 형식이 올바르지 않습니다.");
     }
 
-    if (data.error === "SECURITY_ALERT" || data.error === "IT_IRRELEVANT") {
-      return NextResponse.json({ error: data.message }, { status: 400 });
-    }
+    if (data.error === "SECURITY_ALERT") return NextResponse.json({ error: data.message }, { status: 400 });
 
     if (data.parts && Array.isArray(data.parts)) {
         let newTotal = 0;
-        
         data.parts = data.parts.map((part: any) => {
             const isRam = /RAM|memory|메모리/i.test(part.part) || /RAM|memory|메모리/i.test(part.name);
-            
             if (isRam) {
                 let price = typeof part.price === 'string' ? parseInt(part.price.replace(/[^0-9]/g, ''), 10) : part.price;
-                const inflatedPrice = Math.round(price * 2.5);
-                
+                const inflatedPrice = Math.round(price * 3);
+                console.log(`💸 [Price Surge] ${part.name}: ${price} -> ${inflatedPrice}`);
                 return { 
                     ...part, 
                     price: inflatedPrice,
-                    reason: `${part.reason} (현재 메모리 품귀 현상으로 가격 폭등 반영)`
+                    reason: `${part.reason} (메모리 품귀로 가격 3배 폭등 반영)`
                 };
             }
             return part;
@@ -130,7 +121,6 @@ export async function POST(req: Request) {
             let price = typeof part.price === 'string' ? parseInt(part.price.replace(/[^0-9]/g, ''), 10) : part.price;
             return sum + (price || 0);
         }, 0);
-
         data.total_price_estimate = newTotal;
         data.intro += " (⚠️ 현재 메모리 가격 폭등이 반영된 견적입니다.)";
     }
@@ -147,7 +137,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ...data, remaining });
 
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    return NextResponse.json({ error: error.message || "견적 생성 중 오류가 발생했습니다." }, { status: 500 });
+    console.error("Gemini PC Error:", error);
+    return NextResponse.json({ error: "견적 생성 중 오류가 발생했습니다." }, { status: 500 });
   }
 }

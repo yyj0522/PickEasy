@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { model, cleanGeminiJson } from '@/lib/gemini';
+import { model } from '@/lib/gemini';
 import { checkDailyLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
 import { verifyTurnstileToken, validateInput, SYSTEM_GUARD_PROMPT } from '@/lib/security';
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { productA, productB, query, turnstileToken } = await req.json();
+    const { productA, productB, turnstileToken } = await req.json();
     
     const isHuman = await verifyTurnstileToken(turnstileToken);
     if (!isHuman) {
@@ -28,85 +28,51 @@ export async function POST(req: Request) {
     const now = new Date();
     const today = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
 
-    if (productA && productB) {
-      const safeA = validateInput(productA);
-      const safeB = validateInput(productB);
-
-      if (safeA.trim().length < 1 || safeB.trim().length < 1) {
-        return NextResponse.json({ error: "제품명을 입력해주세요." }, { status: 400 });
-      }
-
-      const prompt = `
-        **${today}** 기준, 두 제품 '${safeA}'와 '${safeB}'를 비교 분석해주세요.
-        Google 검색을 통해 **${today} 현재**의 최신 스펙과 가격을 확인하세요.
-
-        ${SYSTEM_GUARD_PROMPT}
-
-        [예외 처리]
-        1. 두 제품이 서로 다른 카테고리라 비교가 불가능한 경우 (예: 노트북 vs 냉장고, 아이폰 vs 바나나),
-           다음 JSON을 반환: { "error": "INCOMPARABLE", "message": "서로 다른 종류의 제품은 비교할 수 없습니다." }
-        2. 존재하지 않는 제품명이거나 오타가 심한 경우,
-           다음 JSON을 반환: { "error": "NOT_FOUND", "message": "제품 정보를 찾을 수 없습니다." }
-
-        [출력 형식 - JSON Only]
-        {
-          "productA_name": "정확한 모델명 A",
-          "productB_name": "정확한 모델명 B",
-          "specs": [
-            { "category": "가격(추정)", "specA": "...", "specB": "...", "winner": "A" },
-            { "category": "핵심 성능", "specA": "...", "specB": "...", "winner": "B" },
-            ... (최소 4개 항목)
-          ],
-          "final_verdict": "최종 결론 및 추천 대상"
-        }
-      `;
-
-      const result = await model.generateContent(prompt);
-      const data = JSON.parse(cleanGeminiJson(result.response.text()));
-
-      if (data.error) return NextResponse.json({ error: data.message }, { status: 400 });
-      return NextResponse.json({ ...data, remaining });
+    if (!productA || !productB) {
+       return NextResponse.json({ error: "제품명을 입력해주세요." }, { status: 400 });
     }
 
-    if (query) {
-      const safeQuery = validateInput(query);
+    const safeA = validateInput(productA);
+    const safeB = validateInput(productB);
 
-      if (safeQuery.trim().length < 2) {
-        return NextResponse.json({ error: "검색어를 2글자 이상 입력해주세요." }, { status: 400 });
-      }
-
-      const prompt = `
-        사용자 질문: "${safeQuery}"
-        당신은 IT 쇼핑 큐레이터입니다. **${today}** 기준 최신 정보를 바탕으로 제품을 추천하세요.
-
-        ${SYSTEM_GUARD_PROMPT}
-
-        [예외 처리]
-        질문이 IT 기기, 가전제품 추천과 관련이 없다면 다음 JSON 반환:
-        { "error": "IRRELEVANT", "message": "IT 제품이나 가전제품 관련 질문만 답변해드릴 수 있어요." }
-
-        [출력 형식 - JSON Only]
-        {
-          "analysis": "사용자 의도 분석",
-          "recommendations": [
-            {
-              "name": "제품명",
-              "price_estimate": "가격(숫자만, 예: 1500000)",
-              "reason": "추천 이유",
-              "tags": ["태그1", "태그2"]
-            }
-          ]
-        }
-      `;
+    const prompt = `
+      **${today}** 기준, '${safeA}'와 '${safeB}'를 사용자의 선택에 도움이 될 수 있도록 상세하게 비교 분석해주세요.
       
-      const result = await model.generateContent(prompt);
-      const data = JSON.parse(cleanGeminiJson(result.response.text()));
+      ${SYSTEM_GUARD_PROMPT}
 
-      if (data.error) return NextResponse.json({ error: data.message }, { status: 400 });
-      return NextResponse.json({ ...data, remaining });
+      [예외 처리]
+      - 비교 불가: { "error": "INCOMPARABLE", "message": "비교할 수 없는 제품입니다." }
+      - 정보 없음: { "error": "NOT_FOUND", "message": "제품 정보를 찾을 수 없습니다." }
+
+      [출력 형식 - JSON Only]
+      **마크다운 없이 오직 JSON 문자열만 출력하세요.**
+      {
+        "productA_name": "모델명A",
+        "productB_name": "모델명B",
+        "specs": [
+          { "category": "항목", "specA": "값", "specB": "값", "winner": "A 또는 B" }
+        ],
+        "final_verdict": "결론"
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    let responseText = result.response.text();
+    
+    responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+    
+    console.log("🔍 [VS Raw AI Output]:", responseText);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("❌ JSON Parsing Failed. Raw:", responseText);
+      return NextResponse.json({ error: "분석 결과를 처리하지 못했습니다." }, { status: 500 });
     }
 
-    return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
+    if (data.error) return NextResponse.json({ error: data.message }, { status: 400 });
+    return NextResponse.json({ ...data, remaining });
 
   } catch (error) {
     console.error("Gemini VS Error:", error);
