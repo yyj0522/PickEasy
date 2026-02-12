@@ -21,7 +21,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold mb-3 text-gray-900">2. 수집하는 개인정보 항목 및 방법</h2>
             <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
               <li>회사는 별도의 회원가입 없이 서비스를 제공하며, 이용자의 이름, 전화번호 등 민감한 개인정보를 직접 수집하지 않습니다.</li>
-              <li>단, 서비스 이용 과정에서 <strong>IP 주소, 쿠키(Cookie), 방문 일시, 서비스 이용 기록, 기기 정보</strong> 등이 자동으로 생성되어 수집될 수 있습니다.</li>
+              <li>단, 서비스 이용 과정에서 <strong>IP 주소, 쿠키(Cookie), 기기 식별 고유값(UUID), 방문 일시, 서비스 이용 기록, 기기 정보</strong> 등이 자동으로 생성되어 수집될 수 있습니다.</li>
             </ul>
           </section>
 
@@ -31,12 +31,25 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
               <li>서비스 제공에 따른 콘텐츠 제공 및 맞춤형 서비스 제공</li>
               <li>접속 빈도 파악 또는 회원의 서비스 이용에 대한 통계</li>
+              <li><strong>보안 및 서비스 관리: 일일 이용 한도(Rate Limit) 제한, 부정 이용 방지 및 비인가 접속 차단</strong></li>
               <li><strong>제휴 마케팅 활동(쿠팡 파트너스, 링크프라이스 등)에 따른 트래픽 추적 및 실적 집계</strong></li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold mb-3 text-gray-900">4. 쿠키(Cookie)의 운영 및 거부</h2>
+            <h2 className="text-xl font-bold mb-3 text-gray-900">4. 개인정보의 보유 및 이용 기간</h2>
+            <p className="text-sm text-gray-600 mb-2">
+              회사는 원칙적으로 개인정보 수집 및 이용 목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 단, 관계 법령 및 내부 방침에 따라 일정 기간 보관이 필요한 경우 아래와 같이 보관합니다.
+            </p>
+            <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+              <li><strong>보존 항목:</strong> 접속 로그, IP 주소, 기기 식별값, 서비스 이용 기록</li>
+              <li><strong>보존 근거:</strong> 서비스 혼잡 방지, 보안 관리 및 부정 이용 방지</li>
+              <li><strong>보존 기간:</strong> 1년 (이후 자동 파기)</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold mb-3 text-gray-900">5. 쿠키(Cookie)의 운영 및 거부</h2>
             <div className="text-sm text-gray-600 space-y-2">
               <p>
                 회사는 이용자에게 맞춤형 서비스를 제공하고, 제휴 마케팅 성과 측정을 위해 이용자의 정보를 저장하고 수시로 불러오는 '쿠키(Cookie)'를 사용합니다.
@@ -52,7 +65,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold mb-3 text-gray-900">5. 개인정보 관련 고충 처리</h2>
+            <h2 className="text-xl font-bold mb-3 text-gray-900">6. 개인정보 관련 고충 처리</h2>
             <p className="text-sm text-gray-600">
               회사는 개인정보보호와 관련하여 이용자가 의견과 불만을 제기할 수 있는 창구를 개설하고 있습니다.<br/>
               문의사항이 있으시면 아래 연락처로 연락 주시기 바랍니다.
@@ -63,7 +76,7 @@ export default function PrivacyPage() {
           </section>
 
           <section className="pt-8 border-t border-gray-100">
-            <p className="text-xs text-gray-500">본 방침은 2026년 2월 5일부터 시행됩니다.</p>
+            <p className="text-xs text-gray-500">본 방침은 2026년 2월 13일부터 시행됩니다.</p>
           </section>
         </div>
       </main>

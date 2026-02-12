@@ -39,10 +39,23 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold mb-3 text-gray-900">제4조 (서비스 이용의 제한)</h2>
-            <p className="text-sm text-gray-600">
-              회사는 이용자가 본 약관을 위반하거나 시스템에 부하를 주는 행위(해킹, 매크로 등)를 할 경우, 사전 통보 없이 서비스 이용을 제한할 수 있습니다.
-            </p>
+            <h2 className="text-xl font-bold mb-3 text-gray-900">제4조 (서비스 이용의 제한 및 금지행위)</h2>
+            <div className="text-sm text-gray-600 space-y-2">
+              <p>
+                1. 회사는 서비스의 안정적인 운영을 위하여 <strong>일일 이용 횟수를 제한</strong>할 수 있으며, 이를 초과하는 접속에 대해서는 서비스 제공을 일시적으로 중단할 수 있습니다.
+              </p>
+              <p>
+                2. 이용자는 다음 각 호의 행위를 하여서는 안 됩니다.
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>자동 접속 프로그램(매크로), 봇(Bot) 등을 사용하여 서비스의 정상적인 운영을 방해하는 행위</li>
+                <li>회사의 서버 및 네트워크 시스템에 무단으로 접근하거나 해킹을 시도하는 행위</li>
+                <li>기타 관계 법령에 위배되거나 회사의 업무를 방해하는 행위</li>
+              </ul>
+              <p>
+                3. 회사는 위 2항을 위반한 이용자에 대하여 사전 통보 없이 <strong>접속 차단(IP Block)</strong> 및 법적 조치를 취할 수 있습니다.
+              </p>
+            </div>
           </section>
 
           <section>
@@ -53,7 +66,7 @@ export default function TermsPage() {
           </section>
 
           <section className="pt-8 border-t border-gray-100">
-            <p className="text-xs text-gray-500">본 약관은 2026년 2월 5일부터 적용됩니다.</p>
+            <p className="text-xs text-gray-500">본 약관은 2026년 2월 13일부터 적용됩니다.</p>
           </section>
         </div>
       </main>
