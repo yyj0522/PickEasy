@@ -67,7 +67,18 @@ export async function POST(req: Request) {
        
        const result = await model.generateContent(prompt);
        const responseText = result.response.text();
-       const data = JSON.parse(cleanGeminiJson(responseText));
+       
+       if (!responseText) {
+         throw new Error("AI 응답이 비어있습니다.");
+       }
+
+       let data;
+       try {
+         data = JSON.parse(cleanGeminiJson(responseText));
+       } catch (jsonError) {
+         console.error("JSON Parse Error (Query):", responseText);
+         throw new Error("AI 응답을 분석하는 데 실패했습니다.");
+       }
        
        if (data.error === "IRRELEVANT" || data.error === "SECURITY_ALERT") {
          return NextResponse.json({ error: data.message }, { status: 400 });
@@ -114,7 +125,19 @@ export async function POST(req: Request) {
     `;
 
     const result = await model.generateContent(prompt);
-    const data = JSON.parse(cleanGeminiJson(result.response.text()));
+    const responseText = result.response.text();
+
+    if (!responseText) {
+       throw new Error("AI 응답이 비어있습니다.");
+    }
+
+    let data;
+    try {
+      data = JSON.parse(cleanGeminiJson(responseText));
+    } catch (jsonError) {
+      console.error("JSON Parse Error (Quiz):", responseText);
+      throw new Error("AI 응답 형식이 올바르지 않습니다.");
+    }
 
     if (data.error === "SECURITY_ALERT") {
       return NextResponse.json({ error: data.message }, { status: 400 });
@@ -122,8 +145,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ...data, remaining });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Quiz Error:", error);
-    return NextResponse.json({ error: "추천 결과를 생성하지 못했습니다." }, { status: 500 });
+    return NextResponse.json({ error: "일시적인 AI 오류입니다. 잠시 후 다시 시도해주세요." }, { status: 500 });
   }
 }
