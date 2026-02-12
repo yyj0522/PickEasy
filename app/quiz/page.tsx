@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from 'react'; 
+import { useState, useEffect, Suspense} from 'react'; 
 import { useSearchParams, useRouter } from 'next/navigation'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Laptop, Monitor, Mouse, Keyboard, Tablet, Headphones, Watch, Camera, 
   Wind, Shirt, Waves, Snowflake, Refrigerator, Zap, Armchair, ChevronRight, 
-  Loader2, Tv, Fan, Speaker, Cpu, Search
-} from 'lucide-react';
+  Loader2, Tv, Fan, Speaker} from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
 import { DesktopSideBanners } from '@/components/ads/AdBanners';

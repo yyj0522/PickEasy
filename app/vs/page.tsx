@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { Swords, Trophy, Loader2, ArrowRightLeft, AlertTriangle } from 'lucide-react';
+import { useState, useEffect} from 'react';
+import {Trophy, Loader2, ArrowRightLeft, AlertTriangle } from 'lucide-react';
 import Disclaimer from '@/components/common/Disclaimer';
 import Footer from '@/components/layout/Footer';
 import SecurityModal from '@/components/common/SecurityModal';
