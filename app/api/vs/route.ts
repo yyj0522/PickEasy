@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
   if (!allowed) {
     return NextResponse.json({ 
-      error: "일일 사용 횟수를 초과했습니다. (하루 5회 제한)",
+      error: "일일 사용 횟수를 초과했습니다.",
       limitReached: true
     }, { status: 429 });
   }

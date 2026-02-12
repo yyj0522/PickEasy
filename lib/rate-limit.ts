@@ -5,7 +5,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const MAX_DAILY_REQUESTS = 5;
+const MAX_DAILY_REQUESTS = 20;
 
 export async function checkDailyLimit(ip: string): Promise<{ allowed: boolean; remaining: number }> {
   try {
