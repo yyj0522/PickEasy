@@ -77,11 +77,11 @@ export default function RootLayout({
           httpEquiv="Content-Security-Policy" 
           content="
             default-src 'self';
-            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://img.linkprice.com https://track.linkprice.com;
+            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://img.linkprice.com https://track.linkprice.com https://va.vercel-scripts.com;
             img-src 'self' data: https: http:;
             style-src 'self' 'unsafe-inline';
             font-src 'self' data:;
-            connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com https://kwefkeqvltaiixylcewm.supabase.co;
+            connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com https://kwefkeqvltaiixylcewm.supabase.co https://va.vercel-scripts.com;
             frame-src 'self' https://challenges.cloudflare.com;
           "
         />

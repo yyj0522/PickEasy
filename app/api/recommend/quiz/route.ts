@@ -8,11 +8,11 @@ export async function POST(req: Request) {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown"; 
   
-  const { allowed, remaining } = await checkDailyLimit(ip);
+  const { allowed, remaining } = await checkDailyLimit(ip, 'quiz');
 
   if (!allowed) {
     return NextResponse.json({ 
-      error: "일일 사용 횟수를 초과했습니다.",
+      error: "일일 추천 횟수(3회)를 초과했습니다.",
       limitReached: true 
     }, { status: 429 });
   }
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 
         [수행 작업]
         1. 사용자 성향 및 **예산 범위**를 정확히 파악하세요.
-        2. **반드시 사용자가 선택한 예산 범위 내에 들어오는 제품만 선정하세요.** (예: 50~200만원 예산이면 30만원짜리 저가형은 제외)
+        2. **반드시 사용자가 선택한 예산 범위 내에 들어오는 제품만 선정하세요.**
         3. Google 검색을 통해 **${today} 현재** 시장에서 가장 호평받는 제품 3개 선정.
         4. 단종된 모델은 제외하고, 지금 구매 가능한 최신 모델 위주로 추천하세요.
         

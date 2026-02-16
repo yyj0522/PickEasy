@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { model } from '@/lib/gemini';
+import { modelNoSearch } from '@/lib/gemini';
 import { checkDailyLimit } from '@/lib/rate-limit'; 
 import { headers } from 'next/headers';
 import { verifyTurnstileToken, validateInput, SYSTEM_GUARD_PROMPT } from '@/lib/security';
@@ -8,12 +8,12 @@ export async function POST(req: Request) {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown"; 
   
-  const { allowed, remaining } = await checkDailyLimit(ip);
+  const { allowed, remaining } = await checkDailyLimit(ip, 'vs');
 
   if (!allowed) {
     return NextResponse.json({ 
-      error: "일일 사용 횟수를 초과했습니다.",
-      limitReached: true
+      error: "일일 비교 횟수(5회)를 초과했습니다.",
+      limitReached: true 
     }, { status: 429 });
   }
 
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       }
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await modelNoSearch.generateContent(prompt);
     let responseText = result.response.text();
     
     responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();

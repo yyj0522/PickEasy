@@ -4,12 +4,16 @@ const apiKey = process.env.GEMINI_API_KEY!;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash-lite", 
+  model: "gemini-2.5-flash",
   tools: [
     {
-      googleSearch: {}, 
+      googleSearch: {},
     } as any, 
   ],
+});
+
+export const modelNoSearch = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
 });
 
 export const cleanGeminiJson = (text: string) => {

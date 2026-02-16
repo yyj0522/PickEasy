@@ -14,11 +14,11 @@ export async function POST(req: Request) {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for") || "unknown"; 
   
-  const { allowed, remaining } = await checkDailyLimit(ip);
+  const { allowed, remaining } = await checkDailyLimit(ip, 'pc');
 
   if (!allowed) {
     return NextResponse.json({ 
-        error: "일일 사용 횟수를 초과했습니다.",
+        error: "일일 PC 견적 요청 횟수(3회)를 초과했습니다.",
         limitReached: true
     }, { status: 429 });
   }
@@ -69,6 +69,7 @@ export async function POST(req: Request) {
          - 듣보잡 브랜드나 지나치게 화려한 튜닝 램은 제외하세요.
          - 대중들이 가장 많이 쓰는 '국민 램'을 선택하세요.
       2. 모든 부품은 현재 한국 시장에서 쉽게 구할 수 있는 대중적인 브랜드 위주로 구성하세요.
+      3. **Google 검색을 사용하여 각 부품의 ${today} 기준 실시간 최저가를 확인하고 반영하세요.**
 
       ${SYSTEM_GUARD_PROMPT}
 
@@ -94,7 +95,7 @@ export async function POST(req: Request) {
     try {
       data = JSON.parse(responseText);
     } catch (e) {
-      console.error("❌ JSON Parsing Failed. Raw:", responseText);
+      console.error("JSON Parsing Failed. Raw:", responseText);
       throw new Error("AI 응답 형식이 올바르지 않습니다.");
     }
 
@@ -103,19 +104,12 @@ export async function POST(req: Request) {
     if (data.parts && Array.isArray(data.parts)) {
         let newTotal = 0;
         data.parts = data.parts.map((part: any) => {
-            const isRam = /RAM|memory|메모리/i.test(part.part) || /RAM|memory|메모리/i.test(part.name);
-            if (isRam) {
-                let price = typeof part.price === 'string' ? parseInt(part.price.replace(/[^0-9]/g, ''), 10) : part.price;
-                
-                const inflatedPrice = Math.round(price * 3);
-                
-                return { 
-                    ...part, 
-                    price: inflatedPrice,
-                    reason: part.reason 
-                };
-            }
-            return part;
+            let price = typeof part.price === 'string' ? parseInt(part.price.replace(/[^0-9]/g, ''), 10) : part.price;
+            return { 
+                ...part, 
+                price: price,
+                reason: part.reason 
+            };
         });
 
         newTotal = data.parts.reduce((sum: number, part: any) => {

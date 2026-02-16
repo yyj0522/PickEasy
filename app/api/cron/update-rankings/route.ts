@@ -37,10 +37,9 @@ export async function GET(req: Request) {
   const secret = searchParams.get('secret');
   const manualSlug = searchParams.get('slug'); 
 
-  
   if (secret !== process.env.CRON_SECRET) { 
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-}
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   let targetCategory;
 
