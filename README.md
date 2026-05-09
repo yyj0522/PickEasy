@@ -10,7 +10,6 @@
 [![Gemini API](https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
 
 [웹사이트 바로가기](https://www.easypick-ai.com/) / 
-[개발일지 바로가기](#)
 
 </div>
 
