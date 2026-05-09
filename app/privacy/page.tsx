@@ -32,7 +32,6 @@ export default function PrivacyPage() {
               <li>서비스 제공에 따른 콘텐츠 제공 및 맞춤형 서비스 제공</li>
               <li>접속 빈도 파악 또는 회원의 서비스 이용에 대한 통계</li>
               <li><strong>보안 및 서비스 관리: 일일 이용 한도(Rate Limit) 제한, 부정 이용 방지 및 비인가 접속 차단</strong></li>
-              <li><strong>제휴 마케팅 활동(쿠팡 파트너스, 링크프라이스 등)에 따른 트래픽 추적 및 실적 집계</strong></li>
             </ul>
           </section>
 
@@ -52,10 +51,9 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-bold mb-3 text-gray-900">5. 쿠키(Cookie)의 운영 및 거부</h2>
             <div className="text-sm text-gray-600 space-y-2">
               <p>
-                회사는 이용자에게 맞춤형 서비스를 제공하고, 제휴 마케팅 성과 측정을 위해 이용자의 정보를 저장하고 수시로 불러오는 '쿠키(Cookie)'를 사용합니다.
+                회사는 이용자에게 맞춤형 서비스를 제공하기 위해 이용자의 정보를 저장하고 수시로 불러오는 '쿠키(Cookie)'를 사용합니다.
               </p>
               <p>
-                특히, <strong>쿠팡 파트너스 및 링크프라이스 활동</strong>의 일환으로 제3자(제휴사)가 이용자의 브라우저에 쿠키를 저장하거나 읽을 수 있습니다.
                 이용자는 쿠키 설치에 대한 선택권을 가지고 있으며, 웹 브라우저 설정을 통해 모든 쿠키를 허용하거나, 거부할 수 있습니다.
               </p>
               <p className="bg-gray-100 p-3 rounded mt-2">

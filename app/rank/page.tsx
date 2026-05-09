@@ -2,90 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Loader2, TrendingUp, AlertCircle, Mail, ChevronDown, ChevronUp, Search, ExternalLink } from 'lucide-react'; 
+import { Loader2, AlertCircle, Mail, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'; 
 import Link from 'next/link';
 import Footer from '@/components/layout/Footer';
 import Disclaimer from '@/components/common/Disclaimer';
-import { DesktopSideBanners } from '@/components/ads/AdBanners';
 import TermHighlighter from '@/components/common/TermHighlighter';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
-
-type Banner = {
-  id: string;
-  href: string;
-  imgSrc: string;
-  width: number;
-  height: number;
-  alt: string;
-  trackingSrc?: string;
-  isCoupang?: boolean;
-};
-
-const DESKTOP_BANNERS: Banner[] = [
-  { 
-    id: 'gmarket_d',
-    href: '/api/ad?id=gmarket_d',
-    imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20221004/K00HwzuaHqe00_728x90.jpg',
-    width: 728, height: 90, alt: 'G마켓',
-    trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=6775&l_cd1=2&l_cd2=0'
-  },
-  { 
-    id: 'lenovo_d',
-    href: '/api/ad?id=lenovo_d',
-    imgSrc: 'https://img.linkprice.com/files/glink/lenovo/20250516/000vtShk00000_레노버 728x90.png',
-    width: 728, height: 90, alt: '레노버',
-    trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=lenovo&a_id=A100702467&p_id=0000&l_id=DKT0&l_cd1=2&l_cd2=0'
-  },
-  { 
-    id: 'himart_d',
-    href: '/api/ad?id=himart_d',
-    imgSrc: 'https://img.linkprice.com/files/glink/himart/20250630/686230aa8d3de_728x90.png',
-    width: 728, height: 90, alt: '하이마트',
-    trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=Oze4&l_cd1=2&l_cd2=0'
-  },
-  { 
-    id: 'coupang_d',
-    href: '/api/ad?id=coupang_d',
-    imgSrc: 'https://ads-partners.coupang.com/banners/963102?subId=&traceId=V0-301-5f9bd61900e673c0-I963102&w=728&h=90',
-    width: 728, height: 90, alt: '쿠팡',
-    isCoupang: true
-  },
-  {
-    id: 'aliexpress_d',
-    href: '/api/ad?id=aliexpress_d',
-    imgSrc: 'https://img.linkprice.com/files/glink/aliexpress/20230509/AO0161bmd0580_728x90.png',
-    width: 728, height: 90, alt: '알리익스프레스',
-    trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=8PXG&l_cd1=2&l_cd2=0'
-  }
-];
-
-const MOBILE_BANNERS: Banner[] = [
-  { 
-    id: 'himart_m1',
-    href: '/api/ad?id=himart_m1',
-    imgSrc: 'https://img.linkprice.com/files/glink/himart/20260129/697b2513716b9_468x60.png',
-    width: 468, height: 60, alt: '하이마트',
-    trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=TJzp&l_cd1=2&l_cd2=0'
-  },
-  { 
-    id: 'himart_m2',
-    href: '/api/ad?id=himart_m2',
-    imgSrc: 'https://img.linkprice.com/files/glink/himart/20250630/686230aa8c8c3_468x60.png',
-    width: 468, height: 60, alt: '하이마트',
-    trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=xGIZ&l_cd1=2&l_cd2=0'
-  },
-  { 
-    id: 'gmarket_m',
-    href: '/api/ad?id=gmarket_m',
-    imgSrc: 'https://img.linkprice.com/files/glink/gmarket/20221004/W800QYbQ7zS00_468x60.jpg',
-    width: 468, height: 60, alt: 'G마켓',
-    trackingSrc: 'https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=A7tz&l_cd1=2&l_cd2=0'
-  }
-];
 
 const TABS = [
   { slug: 'laptop', name: '노트북' },
@@ -115,14 +41,6 @@ export default function RankPage() {
   const [loading, setLoading] = useState(true);
   const [updateDate, setUpdateDate] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
-
-  const [randomDesktop, setRandomDesktop] = useState<Banner | null>(null);
-  const [randomMobile, setRandomMobile] = useState<Banner | null>(null);
-
-  useEffect(() => {
-    setRandomDesktop(DESKTOP_BANNERS[Math.floor(Math.random() * DESKTOP_BANNERS.length)]);
-    setRandomMobile(MOBILE_BANNERS[Math.floor(Math.random() * MOBILE_BANNERS.length)]);
-  }, []);
 
   useEffect(() => {
     fetchRankings(activeTab);
@@ -154,8 +72,6 @@ export default function RankPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-12 w-full flex-1 relative min-h-[1000px]">
-        
-        <DesktopSideBanners />
 
         <div className="text-center mb-10">
           <h1 className="text-3xl font-black flex items-center justify-center gap-2 mb-3 text-slate-900">
@@ -280,7 +196,7 @@ export default function RankPage() {
                           </div>
                         </div>
 
-                        <div className="mb-6 flex justify-center">
+                        <div className="flex justify-center">
                           <Link 
                             href={`/product/${encodeURIComponent(item.name)}`}
                             className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors w-full md:w-auto text-center flex items-center justify-center gap-2 shadow-lg"
@@ -289,53 +205,6 @@ export default function RankPage() {
                             전문가 상세 분석 & 리뷰 보기
                           </Link>
                         </div>
-
-                        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm text-center">
-                          <h4 className="font-bold text-slate-800 mb-1 flex items-center justify-center gap-2">
-                            <Search className="w-4 h-4 text-blue-600" />
-                            이 제품 최저가 찾아보기
-                          </h4>
-                          <p className="text-xs text-slate-400 mb-4">
-                            아래 쇼핑몰에서 실시간 가격을 확인하세요.
-                          </p>
-                          
-                          <div className="flex flex-wrap justify-center items-center gap-4">
-                            <div className="hover:opacity-80 transition-opacity">
-                              <a target="_blank" href="/api/ad?id=grid_himart" rel="noopener noreferrer nofollow">
-                                <img src="https://img.linkprice.com/files/glink/himart/20260129/697b25135c355_120x60.png" width="120" height="60" alt="하이마트" style={{ border: 0 }} />
-                              </a>
-                              <img src="https://track.linkprice.com/lpshow.php?m_id=himart&a_id=A100702467&p_id=0000&l_id=nyIP&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
-                            </div>
-
-                            <div className="hover:opacity-80 transition-opacity">
-                              <a target="_blank" href="/api/ad?id=grid_gmarket" rel="noopener noreferrer nofollow">
-                                <img src="https://img.linkprice.com/files/glink/gmarket/20191120/5dd48d65a8c5e_120_60.jpg" width="120" height="60" alt="G마켓" style={{ border: 0 }} />
-                              </a>
-                              <img src="https://track.linkprice.com/lpshow.php?m_id=gmarket&a_id=A100702467&p_id=0000&l_id=1638&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
-                            </div>
-
-                            <div className="hover:opacity-80 transition-opacity">
-                              <a href="/api/ad?id=grid_coupang" target="_blank" rel="noopener noreferrer nofollow">
-                                <img src="https://ads-partners.coupang.com/banners/964225?subId=&traceId=V0-301-5f9bd61900e673c0-I964225&w=120&h=60" alt="쿠팡" width="120" height="60" />
-                              </a>
-                            </div>
-
-                            <div className="hover:opacity-80 transition-opacity">
-                              <a target="_blank" href="/api/ad?id=grid_aliexpress" rel="noopener noreferrer nofollow">
-                                <img src="https://img.linkprice.com/files/glink/aliexpress/20240328/600GgnC4eLAW0_120_60.png" width="120" height="60" alt="알리익스프레스" style={{ border: 0 }} />
-                              </a>
-                              <img src="https://track.linkprice.com/lpshow.php?m_id=aliexpress&a_id=A100702467&p_id=0000&l_id=Cq7c&l_cd1=2&l_cd2=0" width="1" height="1" alt="" style={{ display: 'none' }} />
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4 pt-3 border-t border-slate-100">
-                             <p className="text-[10px] text-slate-400 font-medium">
-                               이 사이트는 제휴 마케팅 활동의 일환으로,<br/>
-                               이에 따른 일정액의 수수료를 제공받습니다.
-                             </p>
-                          </div>
-                        </div>
-
                       </div>
                     </div>
                   </div>
@@ -345,44 +214,6 @@ export default function RankPage() {
             )}
           </div>
         )}
-
-        <div className="w-full flex justify-center items-center my-12 overflow-hidden">
-          <div className="hidden md:block">
-            {randomDesktop && (
-              <a href={randomDesktop.href} target="_blank" rel="noopener noreferrer nofollow">
-                <img 
-                  src={randomDesktop.imgSrc} 
-                  alt={randomDesktop.alt} 
-                  width={randomDesktop.width} 
-                  height={randomDesktop.height} 
-                  className="max-w-full h-auto rounded-lg"
-                  {...(randomDesktop.isCoupang && { referrerPolicy: 'unsafe-url' })}
-                />
-                {randomDesktop.trackingSrc && (
-                   <img src={randomDesktop.trackingSrc} width="1" height="1" alt="" style={{ display: 'none' }} />
-                )}
-              </a>
-            )}
-          </div>
-
-          <div className="block md:hidden">
-             {randomMobile && (
-              <a href={randomMobile.href} target="_blank" rel="noopener noreferrer nofollow">
-                <img 
-                  src={randomMobile.imgSrc} 
-                  alt={randomMobile.alt} 
-                  width={randomMobile.width} 
-                  height={randomMobile.height} 
-                  className="max-w-full h-auto rounded-lg"
-                />
-                {randomMobile.trackingSrc && (
-                   <img src={randomMobile.trackingSrc} width="1" height="1" alt="" style={{ display: 'none' }} />
-                )}
-              </a>
-            )}
-          </div>
-        </div>
-
       </div>
       <Footer />
     </div>

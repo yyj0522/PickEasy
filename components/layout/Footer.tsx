@@ -49,14 +49,6 @@ export default function Footer() {
         <hr className="border-gray-200 my-8" />
         
         <div className="text-[11px] text-gray-400 space-y-2 leading-relaxed">
-          <p className="font-medium text-gray-500">
-            ※ 제휴 마케팅 활동 안내
-          </p>
-          <p>
-            픽이지는 쿠팡 파트너스 및 링크프라이스 활동을 통해 일정액의 수수료를 제공받을 수 있습니다.<br/>
-            이 사이트는 제휴마케팅이 포함되어 있으며 커미션을 지급 받습니다.
-          </p>
-          
           <p className="mt-2 font-medium text-gray-500">
             ※ 면책 조항
           </p>

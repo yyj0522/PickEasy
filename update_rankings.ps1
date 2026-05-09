@@ -8,7 +8,7 @@ $categories = @(
     'cleaner', 'hair_dryer', 'massage', 'accessory'
 )
 
-Write-Host "🚀 [수동 모드] 전체 카테고리 업데이트 시작..." -ForegroundColor Cyan
+Write-Host "[수동 모드] 전체 카테고리 업데이트 시작..." -ForegroundColor Cyan
 
 foreach ($slug in $categories) {
     Write-Host "[진행중] $slug 업데이트..." -NoNewline
@@ -27,4 +27,4 @@ foreach ($slug in $categories) {
     Start-Sleep -Seconds 3
 }
 
-Write-Host "🎉 모든 업데이트가 끝났습니다!" -ForegroundColor Cyan
+Write-Host "모든 업데이트가 끝났습니다!" -ForegroundColor Cyan

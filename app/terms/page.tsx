@@ -58,13 +58,6 @@ export default function TermsPage() {
             </div>
           </section>
 
-          <section>
-            <h2 className="text-xl font-bold mb-3 text-gray-900">제5조 (제휴 마케팅 공개)</h2>
-            <p className="text-sm text-gray-600">
-              본 서비스 내의 일부 링크는 쿠팡 파트너스 및 링크프라이스 등 제휴 마케팅 활동의 일환으로 포함되어 있으며, 이용자의 구매 발생 시 회사는 일정액의 수수료를 제공받을 수 있습니다. 이는 서비스 운영 비용으로 사용됩니다.
-            </p>
-          </section>
-
           <section className="pt-8 border-t border-gray-100">
             <p className="text-xs text-gray-500">본 약관은 2026년 2월 13일부터 적용됩니다.</p>
           </section>

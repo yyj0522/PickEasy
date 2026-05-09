@@ -43,10 +43,6 @@ export const metadata: Metadata = {
     },
   },
 
-  alternates: {
-    canonical: '/',
-  },
-
   openGraph: {
     title: 'PickEasy - AI 쇼핑 큐레이터',
     description: '고민은 AI가, 선택은 쉽고 빠르게.',
