@@ -55,27 +55,3 @@
 * **해결 방안:** 1. `layout.tsx`에 잘못 전역 설정된 `canonical` 태그를 제거하여 각 하위 페이지가 고유한 메타데이터를 갖도록 아키텍처를 수정했습니다.
   2. `sitemap.ts`를 활용하여 정적 라우트뿐만 아니라 DB에 쌓이는 랭킹 데이터 기반의 동적 상품 페이지(`/product/[slug]`)까지 자동으로 생성되도록 구현했습니다.
   3. `robots.ts`를 통해 `/api` 등 불필요한 백엔드 라우트의 크롤링을 차단하여 검색 엔진의 크롤링 예산 낭비를 방지하고 핵심 페이지의 노출 속도를 극대화했습니다.
-
-## 설치 및 로컬 실행 방법 (Getting Started)
-
-```powershell
-# 1. 저장소 클론
-git clone [https://github.com/사용자계정/easypick.git](https://github.com/사용자계정/easypick.git)
-
-# 2. 프로젝트 폴더로 이동
-cd easypick
-
-# 3. 의존성 패키지 설치
-npm install
-
-# 4. 환경변수 설정
-# 프로젝트 루트 경로에 .env.local 파일을 생성하고 아래 데이터를 입력합니다.
-New-Item -Path . -Name ".env.local" -ItemType "file" -Value "GEMINI_API_KEY=`"your_gemini_api_key`"`nNEXT_PUBLIC_SUPABASE_URL=`"your_supabase_url`"`nSUPABASE_SERVICE_ROLE_KEY=`"your_supabase_service_role_key`"`nNEXT_PUBLIC_TURNSTILE_SITE_KEY=`"your_turnstile_site_key`""
-
-# 5. 개발 서버 실행
-npm run dev
-
-# 6. 주간 랭킹 업데이트 수동 실행 (선택 사항)
-# 새로운 PowerShell 창을 열고 아래 스크립트를 실행하여 최신 랭킹 데이터를 갱신합니다.
-.\update_rankings.ps1
-```
